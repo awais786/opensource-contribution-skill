@@ -1,0 +1,58 @@
+schema: spec-driven
+
+context: |
+  PRODUCT
+  An AI Agent Skill (Anthropic Skills format) that helps developers become
+  successful open source contributors.
+
+  AUTHOR
+  Engineering manager, 20+ years of software development. Contributes to open
+  source and mentors developers. The differentiating asset of this product is
+  that accumulated mentoring judgment, not the code.
+
+  SCOPE — the skill covers eight areas:
+    1. Finding repositories
+    2. Evaluating repository health
+    3. Understanding large codebases
+    4. Discovering beginner-friendly issues
+    5. Creating high-quality pull requests
+    6. Working effectively with maintainers
+    7. Building a long-term open source portfolio
+    8. Curating the best repositories, blogs, talks, podcasts, and resources
+
+  AUDIENCE
+  Students, junior developers, career switchers, mid-level engineers needing an
+  upstream fix, AI engineers, and experienced developers new to open source.
+
+  TECH
+  Agent Skill: SKILL.md plus references/, scripts/, assets/. Portable across
+  Claude Code and compatible agents. GitHub data via the authenticated `gh` CLI
+  (no separate auth story). Python 3 for scripts. No hosted service, no
+  server-side state, no telemetry.
+
+  OPERATING PRINCIPLES
+  - Never take action against a repository on the user's behalf. Draft comments
+    and pull request bodies for the user to post; never post them.
+  - Cite evidence for claims about a project's conventions or health: a pull
+    request number, a linked file, or a quoted comment. Prefer saying
+    "insufficient data" over producing an unevidenced answer.
+  - Report data freshness. Repository health decays within weeks.
+  - Respect declared contribution policies, including AI-disclosure
+    requirements and prohibitions, and surface them to the user.
+  - Surface CLA, DCO, and licensing when detected; never advise on legal effect.
+  - Official GitHub API only, via `gh`. No scraping.
+  - Analysis stays local to the user. No public index or ranking of projects.
+
+rules:
+  proposal:
+    - State which of the eight scope areas the change covers.
+    - Record assumptions explicitly instead of leaving them implied.
+  specs:
+    - Every requirement needs at least one scenario using WHEN/THEN.
+    - Include a scenario for the insufficient-data or unknown case.
+  design:
+    - Give the rationale and the alternatives considered for each decision.
+    - State GitHub API rate-limit cost for anything that reads many repositories.
+  tasks:
+    - Each task must be verifiable — it is clear when it is done.
+    - Include tasks that verify behavior against real repositories, not only unit tests.
