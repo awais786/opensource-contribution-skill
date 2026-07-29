@@ -11,10 +11,10 @@ Find good open source repos and their top 10 issues in one command.
 
 ```bash
 # Find trending repos + show top 10 issues
-/find-and-evaluate
+/find-issues
 
 # With filters
-/find-and-evaluate --days 30 --topic web --min-stars 100
+/find-issues --days 30 --topic web --min-stars 100
 ```
 
 ## Routes
