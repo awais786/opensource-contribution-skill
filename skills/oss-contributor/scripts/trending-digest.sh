@@ -1,157 +1,143 @@
 #!/bin/bash
 
-# trending-digest.sh - Fetch and format trending GitHub repositories
-# Usage: ./trending-digest.sh [--days N] [--topic TAG] [--min-stars N] [--stats-only] [--language LANG] [--sort FIELD] [--no-cache]
+# trending-digest.sh - Fetch trending GitHub repositories by scraping GitHub's trending page
+# Shows top 10 recent issues per repo with direct links
 
 set -e
 
-# Defaults
-DAYS=${DAYS:-7}
-MIN_STARS=${MIN_STARS:-0}
-TOPIC=${TOPIC:-}
-LANGUAGE=${LANGUAGE:-}
-SORT=${SORT:-stars}
-STATS_ONLY=${STATS_ONLY:-false}
+LANGUAGE=${LANGUAGE:-python}
 USE_CACHE=${USE_CACHE:-true}
-EXCLUDE_PATTERN=${EXCLUDE_PATTERN:-}
+
+# Auto-detect GitHub token from environment or gh CLI
+if [[ -z "$GITHUB_TOKEN" ]]; then
+  if command -v gh &> /dev/null; then
+    GITHUB_TOKEN=$(gh auth token 2>/dev/null || echo "")
+  fi
+fi
+
+CACHE_DIR="$HOME/.oss-contributor/cache/trending"
+mkdir -p "$CACHE_DIR"
+
+CACHE_KEY="trending-${LANGUAGE}.json"
+CACHE_FILE="$CACHE_DIR/$CACHE_KEY"
+CACHE_AGE=$(( $(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || echo 0) ))
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --days) DAYS="$2"; shift 2 ;;
-    --min-stars) MIN_STARS="$2"; shift 2 ;;
-    --topic) TOPIC="$2"; shift 2 ;;
     --language) LANGUAGE="$2"; shift 2 ;;
-    --sort) SORT="$2"; shift 2 ;;
-    --stats-only) STATS_ONLY=true; shift ;;
     --no-cache) USE_CACHE=false; shift ;;
-    --exclude-pattern) EXCLUDE_PATTERN="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
 
-# Validate inputs
-if ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
-  echo "❌ Error: --days must be a positive number" >&2
-  exit 1
-fi
-
-if ! [[ "$MIN_STARS" =~ ^[0-9]+$ ]]; then
-  echo "❌ Error: --min-stars must be a non-negative number" >&2
-  exit 1
-fi
-
-# Cache directory
-CACHE_DIR="$HOME/.oss-contributor/cache/trending"
-mkdir -p "$CACHE_DIR"
-
-# Calculate date cutoff
-CREATED_DATE=$(date -u -v-${DAYS}d "+%Y-%m-%d" 2>/dev/null || date -u -d "${DAYS} days ago" "+%Y-%m-%d")
-
-# Build cache key
-CACHE_KEY="trending-${DAYS}-${MIN_STARS}-${TOPIC}-${LANGUAGE}.json"
-CACHE_FILE="$CACHE_DIR/$CACHE_KEY"
-# Calculate cache age (works on both macOS and Linux)
-if [[ -f "$CACHE_FILE" ]]; then
-  if [[ "$(uname)" == "Darwin" ]]; then
-    CACHE_MTIME=$(stat -f%m "$CACHE_FILE" 2>/dev/null)
-  else
-    CACHE_MTIME=$(stat -c %Y "$CACHE_FILE" 2>/dev/null)
-  fi
-  CACHE_AGE=$(( $(date +%s) - CACHE_MTIME ))
-else
-  CACHE_AGE=999999
-fi
-
 # Check cache (2 hours = 7200 seconds)
 if [[ $USE_CACHE == true ]] && [[ $CACHE_AGE -lt 7200 ]] && [[ -f "$CACHE_FILE" ]]; then
   echo "📊 Using cached results ($(( CACHE_AGE / 60 ))m ago)..." >&2
-  PYTHON_DATA=$(cat "$CACHE_FILE")
+  REPOS_JSON=$(cat "$CACHE_FILE")
   CACHE_STATUS="cached $(( CACHE_AGE / 60 ))m ago"
 else
-  echo "🔍 Querying GitHub API..." >&2
+  echo "🔍 Scraping GitHub trending page..." >&2
 
-  # Build GitHub query
-  QUERY="created:>${CREATED_DATE}"
-  [[ -n "$MIN_STARS" ]] && [[ "$MIN_STARS" -gt 0 ]] && QUERY="${QUERY} stars:>=${MIN_STARS}"
-  [[ -n "$TOPIC" ]] && QUERY="${QUERY} topic:${TOPIC}"
-
-  if [[ -n "$LANGUAGE" ]]; then
-    QUERY="${QUERY} language:${LANGUAGE}"
-  fi
-
-  PYTHON_DATA=$(gh search repos $QUERY --sort "$SORT" --limit 15 --json fullName,url,stargazersCount,description,language,pushedAt 2>/dev/null || echo "[]")
-
-  # Cache result
-  [[ $USE_CACHE == true ]] && echo "$PYTHON_DATA" > "$CACHE_FILE"
-  CACHE_STATUS="fresh (just queried)"
-fi
-
-# Format with Claude Haiku
-PROMPT="Format these GitHub repos as a professional markdown output.
-
-For each repo show:
-- Rank | Repo Name | Stars | Description (max 60 chars) | Language | Last Updated
-
-Add:
-- Section title with count
-- Aggregate stats: total repos, total stars, average stars per repo
-- Language distribution (top 5)
-- Cache status: ${CACHE_STATUS}
-- Timestamp (UTC)
-
-Make it clean, scannable, and professional."
-
-# Call Claude Haiku for formatting
-echo "📝 Formatting with Claude..." >&2
-
-python3 - "$PYTHON_DATA" "$PROMPT" << 'EOF'
+  REPOS_JSON=$(python3 << 'PYTHONEOF'
+import urllib.request
 import json
-import sys
-import subprocess
-from datetime import datetime, timezone
-
-data_str = sys.argv[1]
-prompt = sys.argv[2]
+import re
+from datetime import datetime
 
 try:
-    repos = json.loads(data_str)
-except:
-    repos = []
+    # Scrape GitHub trending page
+    url = f"https://github.com/trending/python?since=daily"
+    response = urllib.request.urlopen(url, timeout=10)
+    html = response.read().decode('utf-8')
 
-if not repos:
-    print("❌ No repos found. Try adjusting filters.")
-    sys.exit(1)
+    # Extract repo paths: /owner/repo
+    repos = re.findall(r'href="(/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)"', html)
+    repos = [r for r in repos if r.count('/') == 2 and not any(x in r for x in ['sponsors', 'trending', 'topics', 'issues', 'pulls', 'settings', 'apps'])]
+    repos = list(set(repos))[:15]
 
-# Format as markdown table
-total_stars = 0
-langs = {}
-output = []
+    repos_data = []
+    for repo_path in repos:
+        owner, name = repo_path.strip('/').split('/')
+        repos_data.append({
+            'owner': owner,
+            'name': name,
+            'url': f'https://github.com/{owner}/{name}'
+        })
 
-output.append(f"## 📊 Trending Repos (Last 7 Days)\n")
-output.append("| Rank | Repo | Stars | Description | Language | Last Commit |")
-output.append("|------|------|-------|-------------|----------|------------|")
+    print(json.dumps(repos_data))
+
+except Exception as e:
+    print(json.dumps([]))
+PYTHONEOF
+  )
+
+  [[ $USE_CACHE == true ]] && echo "$REPOS_JSON" > "$CACHE_FILE"
+  CACHE_STATUS="fresh (just scraped)"
+fi
+
+# Format output
+echo "## 📊 Trending Python Repositories (Daily)"
+echo ""
+echo "| Rank | Repo Link |"
+echo "|------|-----------|"
+
+python3 << PYTHONEOF
+import json
+import urllib.request
+import re
+from datetime import datetime
+import os
+
+repos_json = '''$REPOS_JSON'''
+repos = json.loads(repos_json)
+github_token = '''$GITHUB_TOKEN'''
 
 for i, repo in enumerate(repos, 1):
-    name = repo.get('fullName', 'unknown')
-    stars = repo.get('stargazersCount', 0)
-    desc = repo.get('description', '')[:60] if repo.get('description') else 'N/A'
-    lang = repo.get('language', 'Unknown')
-    updated = repo.get('pushedAt', '')[:10] if repo.get('pushedAt') else 'N/A'
+    owner = repo['owner']
+    name = repo['name']
+    url = repo['url']
+    print(f"| {i} | [{owner}/{name}]({url}) |")
 
-    total_stars += stars
-    langs[lang] = langs.get(lang, 0) + 1
+print("")
+print("## 📋 Issues by Repository")
+print("")
 
-    output.append(f"| {i} | {name} | {stars:,} | {desc} | {lang} | {updated} |")
+for i, repo in enumerate(repos[:15], 1):  # Show issues for all 15
+    owner = repo['owner']
+    name = repo['name']
+    repo_path = f"{owner}/{name}"
 
-# Add stats
-avg_stars = total_stars // len(repos) if repos else 0
-output.append(f"\n## 📈 Statistics\n")
-output.append(f"- **Repos found:** {len(repos)}")
-output.append(f"- **Total stars:** {total_stars:,} ⭐")
-output.append(f"- **Avg stars/repo:** {avg_stars:,}")
-output.append(f"- **Languages:** {', '.join(sorted(langs.keys())[:5])}")
-output.append(f"\n**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} | **Cache:** fresh")
+    print(f"### {i}. {repo_path}")
+    print("")
 
-print("\n".join(output))
-EOF
+    # Fetch issues from GitHub API
+    try:
+        api_url = f"https://api.github.com/repos/{repo_path}/issues?per_page=10&state=open&sort=updated&direction=desc"
+        req = urllib.request.Request(api_url)
+        if github_token:
+            req.add_header('Authorization', f'token {github_token}')
+        req.add_header('Accept', 'application/vnd.github.v3+json')
+        response = urllib.request.urlopen(req, timeout=5)
+        issues = json.loads(response.read().decode('utf-8'))
+
+        if issues:
+            for issue in issues:
+                title = issue['title'][:75]
+                issue_url = issue['html_url']
+                print(f"- [{title}]({issue_url})")
+        else:
+            print("- No open issues found")
+    except Exception as e:
+        print(f"- (Could not fetch issues)")
+
+    print("")
+
+print("## 📊 Statistics")
+print(f"- **Repos found:** {len(repos)}")
+print(f"- **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}")
+print(f"- **Cache:** $CACHE_STATUS")
+if not github_token:
+    print(f"- **Tip:** Add GitHub token for 4-5x faster fetching. See /find-issues for setup.")
+
+PYTHONEOF
