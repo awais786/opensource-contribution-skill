@@ -1,155 +1,102 @@
 # opensource-contribution-skill
 
-Find trending open source projects and make smarter contributions with Claude Code.
+**Find good open source repos and their top 10 issues. Start contributing today.**
 
-## Installation
+## Install (30 seconds)
 
 ```bash
-# 1. Copy skill to Claude Code
+# 1. Copy skill
 cp -r skills/oss-contributor ~/.claude/skills/
 
-# 2. Authenticate with GitHub
+# 2. Authenticate
 gh auth login
-gh auth status  # Verify
 
-# 3. Use in Claude Code (CLI, IDE extension, or claude.ai/code)
+# 3. Restart Claude Code
+# (exit terminal and restart)
 ```
 
-## How to Use
-
-**In Claude Code terminal/chat:**
-
-```
-/trending-repos
-
-/trending-repos --days 30 --topic web --min-stars 100 --stats-only
-```
-
-Or ask Claude directly:
-```
-Show me trending repos
-Show me trending web frameworks
-What's hot in Python right now?
-```
-
-## `/trending-repos` Command
-
-**Options:**
-- `--days N` — Time window (1, 3, 7, 14, 30) — default: 7
-- `--min-stars N` — Minimum stars filter
-- `--topic TAG` — Filter by topic (web, rust, cli, etc.)
-- `--language LANG` — Single language (default: Python + non-Python)
-- `--exclude-pattern` — Exclude repos (e.g., "awesome-*")
-- `--sort FIELD` — Sort by stars, forks, watchers, or updated
-- `--stats-only` — Show statistics only
-- `--no-cache` — Fresh query (skip 2-hour cache)
-
-**Examples:**
+## Use It
 
 ```bash
-# Trending web frameworks
-/trending-repos --topic web --days 30 --min-stars 100
+# Find trending repos + show top 10 issues
+/find-and-evaluate
 
-# Show stats only
-/trending-repos --stats-only
-
-# Trending Rust sorted by recent activity
-/trending-repos --language rust --sort updated
-
-# Skip educational repos
-/trending-repos --exclude-pattern "awesome-*"
+# With filters
+/find-and-evaluate --days 30 --topic web --min-stars 100
+/find-and-evaluate --language rust --days 14
 ```
 
-## Typical Workflow
+## What You Get
 
-1. Find interesting projects
-   ```bash
-   /trending-repos --days 7 --min-stars 100
-   ```
+```
+📊 Top Trending Repos (Last 7 Days)
+| Repo | Stars | Language |
+| ... | ... | ... |
 
-2. Evaluate project quality
-   ```bash
-   /repo-health microsoft/markitdown
-   ```
+🎯 Top 10 Issues: selected/repo
+| # | Title | Labels | Updated |
+| 1 | Add feature X | enhancement | 2 days ago |
+| 2 | Fix bug Y | bug | 5 days ago |
+...
+```
 
-3. Find issues to work on
-   ```bash
-   /issue-discovery microsoft/markitdown
-   ```
+## Options
 
-4. Understand the codebase
-   ```bash
-   /codebase-orientation microsoft/markitdown
-   ```
+```
+--days N           # 1, 3, 7, 14, 30 (default: 7)
+--min-stars N      # Quality filter (default: 0)
+--topic TAG        # web, rust, cli, database, etc.
+--language LANG    # python, rust, typescript, etc.
+--exclude-pattern  # Skip repos (e.g., "awesome-*")
+--no-cache         # Fresh GitHub query (ignore 2-hour cache)
+```
 
-## Features
+## Examples
 
-- **Smart filtering** — Time, topic, stars, language, patterns
-- **Statistics** — Trending languages, average stars, distribution
-- **Caching** — 2-hour cache for efficiency
-- **Cost-effective** — Uses Claude Haiku (~$0.001 per query)
-- **Rate limit safe** — Well under GitHub's API limits
+**Trending web frameworks**
+```bash
+/find-and-evaluate --topic web --min-stars 100 --days 30
+```
 
-## Setup Requirements
+**What's hot in Rust?**
+```bash
+/find-and-evaluate --language rust --days 14
+```
 
-- GitHub CLI (`gh`) — [Install](https://cli.github.com/)
-- GitHub authentication — `gh auth login`
-- Claude Code
+**Find easy starter projects**
+```bash
+/find-and-evaluate --min-stars 50
+# Look for "good first issue" label
+```
+
+## Cost
+
+- Fresh query: ~$0.001 (Haiku model)
+- Cached results: Free (2-hour cache)
 
 ## Troubleshooting
 
-**"No repos found"**
-- Increase time window: `--days 30` instead of `--days 7`
-- Remove or loosen filters
-- Check topic name exists on GitHub
-
 **"gh command not found"**
 ```bash
-# macOS
-brew install gh
-
-# Linux
-sudo apt install gh
-
-# Windows
-choco install gh
+brew install gh        # macOS
+sudo apt install gh    # Linux
+choco install gh       # Windows
 ```
 
-**"GitHub API unavailable"**
-```bash
-gh auth status
-gh api rate_limit  # Check remaining quota
-```
+**No repos found?**
+- Try `--days 30` instead of `--days 7`
+- Remove `--min-stars` filter
+- Check topic name
 
-## Use Cases
+**Can't see command after install?**
+- Restart Claude Code completely
+- Check: `ls ~/.claude/skills/oss-contributor/`
 
-- **Learning:** `--language rust --days 14 --sort updated`
-- **Portfolio:** `--min-stars 200 --days 7` (established projects)
-- **Trending:** `--days 30 --stats-only` (see landscape)
-- **Hidden gems:** `--min-stars 50 --sort forks` (quality signals)
+## Next Steps
 
-## FAQ
+1. Run `/find-and-evaluate`
+2. Pick a repo that interests you
+3. Look for "good first issue" label
+4. Click the issue and start coding
 
-**How often to use this?**  
-Weekly or as needed. Trending changes every few days.
-
-**Does it cost money?**  
-~$0.001 per fresh query. Cached results are free.
-
-**How long is cache?**  
-2 hours. Use `--no-cache` for fresh results immediately.
-
-**Can I filter multiple topics?**  
-Not yet. Run separate commands for each.
-
-## Contributing
-
-Ideas or bugs? Open an issue or PR.
-
-## License
-
-MIT
-
----
-
-Built for open source developers. Happy contributing! 🚀
+**That's it. Happy contributing!** 🚀
