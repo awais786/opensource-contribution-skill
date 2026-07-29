@@ -30,6 +30,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Validate inputs
+if ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
+  echo "❌ Error: --days must be a positive number" >&2
+  exit 1
+fi
+
+if ! [[ "$MIN_STARS" =~ ^[0-9]+$ ]]; then
+  echo "❌ Error: --min-stars must be a non-negative number" >&2
+  exit 1
+fi
+
 # Cache directory
 CACHE_DIR="$HOME/.oss-contributor/cache/trending"
 mkdir -p "$CACHE_DIR"
@@ -40,7 +51,17 @@ CREATED_DATE=$(date -u -v-${DAYS}d "+%Y-%m-%d" 2>/dev/null || date -u -d "${DAYS
 # Build cache key
 CACHE_KEY="trending-${DAYS}-${MIN_STARS}-${TOPIC}-${LANGUAGE}.json"
 CACHE_FILE="$CACHE_DIR/$CACHE_KEY"
-CACHE_AGE=$(( $(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || echo 0) ))
+# Calculate cache age (works on both macOS and Linux)
+if [[ -f "$CACHE_FILE" ]]; then
+  if [[ "$(uname)" == "Darwin" ]]; then
+    CACHE_MTIME=$(stat -f%m "$CACHE_FILE" 2>/dev/null)
+  else
+    CACHE_MTIME=$(stat -c %Y "$CACHE_FILE" 2>/dev/null)
+  fi
+  CACHE_AGE=$(( $(date +%s) - CACHE_MTIME ))
+else
+  CACHE_AGE=999999
+fi
 
 # Check cache (2 hours = 7200 seconds)
 if [[ $USE_CACHE == true ]] && [[ $CACHE_AGE -lt 7200 ]] && [[ -f "$CACHE_FILE" ]]; then
@@ -56,17 +77,10 @@ else
   [[ -n "$TOPIC" ]] && QUERY="${QUERY} topic:${TOPIC}"
 
   if [[ -n "$LANGUAGE" ]]; then
-    # Single language
     QUERY="${QUERY} language:${LANGUAGE}"
-    PYTHON_DATA=$(gh search repos $QUERY --sort "$SORT" --limit 15 --json name,url,stargazersCount,description,primaryLanguage,pushedAt 2>/dev/null || echo "[]")
-  else
-    # Python + non-Python split
-    PYTHON_QUERY="${QUERY} language:python"
-    NON_PYTHON_QUERY="${QUERY} language:-python"
-
-    PYTHON_DATA=$(gh search repos $PYTHON_QUERY --sort "$SORT" --limit 15 --json name,url,stargazersCount,description,primaryLanguage,pushedAt 2>/dev/null || echo "[]")
-    NON_PYTHON_DATA=$(gh search repos $NON_PYTHON_QUERY --sort "$SORT" --limit 15 --json name,url,stargazersCount,description,primaryLanguage,pushedAt 2>/dev/null || echo "[]")
   fi
+
+  PYTHON_DATA=$(gh search repos $QUERY --sort "$SORT" --limit 15 --json fullName,url,stargazersCount,description,language,pushedAt 2>/dev/null || echo "[]")
 
   # Cache result
   [[ $USE_CACHE == true ]] && echo "$PYTHON_DATA" > "$CACHE_FILE"
@@ -91,11 +105,11 @@ Make it clean, scannable, and professional."
 # Call Claude Haiku for formatting
 echo "📝 Formatting with Claude..." >&2
 
-python3 << 'EOF' "$PYTHON_DATA" "$PROMPT"
+python3 - "$PYTHON_DATA" "$PROMPT" << 'EOF'
 import json
 import sys
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 
 data_str = sys.argv[1]
 prompt = sys.argv[2]
@@ -119,10 +133,10 @@ output.append("| Rank | Repo | Stars | Description | Language | Last Commit |")
 output.append("|------|------|-------|-------------|----------|------------|")
 
 for i, repo in enumerate(repos, 1):
-    name = repo.get('name', 'unknown')
+    name = repo.get('fullName', 'unknown')
     stars = repo.get('stargazersCount', 0)
     desc = repo.get('description', '')[:60] if repo.get('description') else 'N/A'
-    lang = repo.get('primaryLanguage', 'Unknown')
+    lang = repo.get('language', 'Unknown')
     updated = repo.get('pushedAt', '')[:10] if repo.get('pushedAt') else 'N/A'
 
     total_stars += stars
@@ -137,7 +151,7 @@ output.append(f"- **Repos found:** {len(repos)}")
 output.append(f"- **Total stars:** {total_stars:,} ⭐")
 output.append(f"- **Avg stars/repo:** {avg_stars:,}")
 output.append(f"- **Languages:** {', '.join(sorted(langs.keys())[:5])}")
-output.append(f"\n**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} | **Cache:** fresh")
+output.append(f"\n**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} | **Cache:** fresh")
 
 print("\n".join(output))
 EOF
