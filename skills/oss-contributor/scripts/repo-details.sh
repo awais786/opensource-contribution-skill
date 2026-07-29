@@ -71,17 +71,24 @@ try:
 
     # Print issues section
     print("## 🎯 Top 10 Issues to Work On")
+    print("(No pull requests - only unassigned issues)")
     print("")
 
     if issues:
-        for i, issue in enumerate(issues, 1):
-            title = issue['title']
-            url = issue['html_url']
-            labels = [label['name'] for label in issue.get('labels', [])]
-            label_str = ', '.join(labels) if labels else 'no labels'
-            print(f"{i}. **[{title}]({url})**")
-            print(f"   - Labels: {label_str}")
-            print("")
+        # Filter out issues that are PRs or have PR references
+        real_issues = [issue for issue in issues if not issue.get('pull_request')]
+
+        if real_issues:
+            for i, issue in enumerate(real_issues[:10], 1):
+                title = issue['title']
+                url = issue['html_url']
+                labels = [label['name'] for label in issue.get('labels', [])]
+                label_str = ', '.join(labels) if labels else 'no labels'
+                print(f"{i}. **[{title}]({url})**")
+                print(f"   - Labels: {label_str}")
+                print("")
+        else:
+            print("- No issues without PRs - all open issues have PRs in progress")
     else:
         print("- No open issues found")
 
