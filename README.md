@@ -19,11 +19,11 @@ gh auth login
 
 ```bash
 # Find trending repos + show top 10 issues
-/find-and-evaluate
+/find-issues
 
 # With filters
-/find-and-evaluate --days 30 --topic web --min-stars 100
-/find-and-evaluate --language rust --days 14
+/find-issues --days 30 --topic web --min-stars 100
+/find-issues --language rust --days 14
 ```
 
 ## What You Get
@@ -55,17 +55,17 @@ gh auth login
 
 **Trending web frameworks**
 ```bash
-/find-and-evaluate --topic web --min-stars 100 --days 30
+/find-issues --topic web --min-stars 100 --days 30
 ```
 
 **What's hot in Rust?**
 ```bash
-/find-and-evaluate --language rust --days 14
+/find-issues --language rust --days 14
 ```
 
 **Find easy starter projects**
 ```bash
-/find-and-evaluate --min-stars 50
+/find-issues --min-stars 50
 # Look for "good first issue" label
 ```
 
@@ -94,7 +94,7 @@ choco install gh       # Windows
 
 ## Next Steps
 
-1. Run `/find-and-evaluate`
+1. Run `/find-issues`
 2. Pick a repo that interests you
 3. Look for "good first issue" label
 4. Click the issue and start coding

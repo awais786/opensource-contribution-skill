@@ -21,7 +21,7 @@ Find good open source repos and their top 10 issues in one command.
 
 | Ask | Command | Reference |
 |---|---|---|
-| Find good repos & top 10 issues | find-and-evaluate | `references/00-repo-and-issues.md` |
+| Find trending repos & their top 10 issues | find-issues | `references/00-repo-and-issues.md` |
 
 ## Setup
 

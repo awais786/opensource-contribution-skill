@@ -5,8 +5,8 @@ One command to find trending repos and see their top 10 issues.
 ## Command
 
 ```bash
-/find-and-evaluate
-/find-and-evaluate --days 30 --topic web --min-stars 100
+/find-issues
+/find-issues --days 30 --topic web --min-stars 100
 ```
 
 ## What It Does
@@ -60,17 +60,17 @@ One command to find trending repos and see their top 10 issues.
 
 ### "Show me trending web frameworks"
 ```bash
-/find-and-evaluate --topic web --min-stars 100 --days 30
+/find-issues --topic web --min-stars 100 --days 30
 ```
 
 ### "What's hot in Rust?"
 ```bash
-/find-and-evaluate --language rust --days 14
+/find-issues --language rust --days 14
 ```
 
 ### "Find easy starter issues"
 ```bash
-/find-and-evaluate
+/find-issues
 # Look for "good first issue" label in output
 ```
 
@@ -119,7 +119,7 @@ choco install gh       # Windows
 **Cached results?**
 Use `--no-cache` for fresh data immediately:
 ```bash
-/find-and-evaluate --no-cache
+/find-issues --no-cache
 ```
 
 ## Next Steps
