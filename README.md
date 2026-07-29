@@ -20,9 +20,9 @@ gh auth status  # Verify
 **In Claude Code terminal/chat:**
 
 ```
-/trending-digest
+/trending-repos
 
-/trending-digest --days 30 --topic web --min-stars 100 --stats-only
+/trending-repos --days 30 --topic web --min-stars 100 --stats-only
 ```
 
 Or ask Claude directly:
@@ -32,7 +32,7 @@ Show me trending web frameworks
 What's hot in Python right now?
 ```
 
-## `/trending-digest` Command
+## `/trending-repos` Command
 
 **Options:**
 - `--days N` — Time window (1, 3, 7, 14, 30) — default: 7
@@ -48,23 +48,23 @@ What's hot in Python right now?
 
 ```bash
 # Trending web frameworks
-/trending-digest --topic web --days 30 --min-stars 100
+/trending-repos --topic web --days 30 --min-stars 100
 
 # Show stats only
-/trending-digest --stats-only
+/trending-repos --stats-only
 
 # Trending Rust sorted by recent activity
-/trending-digest --language rust --sort updated
+/trending-repos --language rust --sort updated
 
 # Skip educational repos
-/trending-digest --exclude-pattern "awesome-*"
+/trending-repos --exclude-pattern "awesome-*"
 ```
 
 ## Typical Workflow
 
 1. Find interesting projects
    ```bash
-   /trending-digest --days 7 --min-stars 100
+   /trending-repos --days 7 --min-stars 100
    ```
 
 2. Evaluate project quality

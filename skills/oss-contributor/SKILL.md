@@ -23,7 +23,7 @@ Read the matching reference file, then follow it. **Read only the one you need**
 
 | Ask | Route | Reference |
 |---|---|---|
-| Show me trending repos (Python + non-Python) | trending-digest | `references/00-trending-repos-digest.md` |
+| Show me trending repos (Python + non-Python) | trending-repos | `references/00-trending-repos-digest.md` |
 | Who am I, what am I good at | profile | `references/00-contributor-profile.md` |
 | Which projects am I working in | targets | `references/00-target-repositories.md` |
 | Find me projects to contribute to | discovery | `references/01-repo-discovery.md` |

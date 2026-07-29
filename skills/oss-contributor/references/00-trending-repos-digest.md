@@ -12,16 +12,16 @@ Quick daily view of what's trending in open source with flexible filtering and i
 
 ```bash
 # Default: top 15 Python + 15 non-Python repos (last 7 days)
-/trending-digest
+/trending-repos
 
 # With options
-/trending-digest --days 30 --min-stars 100 --topic web
+/trending-repos --days 30 --min-stars 100 --topic web
 
 # Show stats only
-/trending-digest --stats
+/trending-repos --stats
 
 # Exclude educational repos
-/trending-digest --exclude-pattern "awesome-*"
+/trending-repos --exclude-pattern "awesome-*"
 ```
 
 ---
@@ -76,19 +76,19 @@ Quick daily view of what's trending in open source with flexible filtering and i
 ### Example Queries
 ```bash
 # Trending web frameworks in last 30 days
-/trending-digest --days 30 --topic web --min-stars 50
+/trending-repos --days 30 --topic web --min-stars 50
 
 # Show stats only (no details)
-/trending-digest --stats-only
+/trending-repos --stats-only
 
 # Rust repos trending last 14 days
-/trending-digest --language rust --days 14
+/trending-repos --language rust --days 14
 
 # Exclude educational/curated lists
-/trending-digest --exclude-pattern "awesome-*,learning-*"
+/trending-repos --exclude-pattern "awesome-*,learning-*"
 
 # Fresh results (bypass 2-hour cache)
-/trending-digest --no-cache
+/trending-repos --no-cache
 ```
 
 ---
@@ -134,7 +134,7 @@ Quick daily view of what's trending in open source with flexible filtering and i
 
 ### With Filters Example
 ```bash
-/trending-digest --days 30 --topic web --min-stars 100
+/trending-repos --days 30 --topic web --min-stars 100
 ```
 
 **Output:**
@@ -166,7 +166,7 @@ Quick daily view of what's trending in open source with flexible filtering and i
 
 ### Stats-Only Example
 ```bash
-/trending-digest --stats-only --days 14
+/trending-repos --stats-only --days 14
 ```
 
 **Output:**
@@ -202,9 +202,9 @@ Generated: 2026-07-29 14:38 UTC | **Cache:** fresh
 
 **Example:**
 ```bash
-/trending-digest                    # Queries GitHub, caches result
-/trending-digest --stats-only       # Returns cached result instantly
-/trending-digest --no-cache         # Ignores cache, queries GitHub fresh
+/trending-repos                    # Queries GitHub, caches result
+/trending-repos --stats-only       # Returns cached result instantly
+/trending-repos --no-cache         # Ignores cache, queries GitHub fresh
 ```
 
 ---
@@ -392,21 +392,21 @@ echo "$formatted_output" > "$cache_file"
 
 **For first-time contributors:**
 ```bash
-/trending-digest --min-stars 200 --days 7 --stats-only
+/trending-repos --min-stars 200 --days 7 --stats-only
 # Then pick repos with active, welcoming communities
 # Use /repo-health to verify responsiveness
 ```
 
 **For experienced contributors:**
 ```bash
-/trending-digest --days 30 --sort updated --topic <domain>
+/trending-repos --days 30 --sort updated --topic <domain>
 # Look for high-velocity projects
 # Use /issue-discovery to find complex problems
 ```
 
 **For learning:**
 ```bash
-/trending-digest --days 14 --topic <language> --stats-only
+/trending-repos --days 14 --topic <language> --stats-only
 # See what the community is building
 # Study the top repos' architecture
 ```
@@ -433,7 +433,7 @@ The trending digest is the **entry point** for finding what to work on. Pair it 
 ### ➡️ Next Route: `/repo-health`
 ```bash
 # Found an interesting trending repo?
-/trending-digest                          # See what's hot
+/trending-repos                          # See what's hot
 # Then evaluate it
 /repo-health microsoft/markitdown         # Check maintainer responsiveness
 ```
@@ -472,7 +472,7 @@ The trending digest is the **entry point** for finding what to work on. Pair it 
 
 ### 🎯 "I want to contribute today"
 ```bash
-1. /trending-digest --days 7 --min-stars 100
+1. /trending-repos --days 7 --min-stars 100
    → Pick 3-5 repos that interest you
 
 2. /repo-health <repo>
@@ -489,18 +489,18 @@ The trending digest is the **entry point** for finding what to work on. Pair it 
 
 ### 🔥 "Show me hot web techs"
 ```bash
-/trending-digest --days 30 --topic web --stats-only
+/trending-repos --days 30 --topic web --stats-only
 → See what's trending in web development right now
 ```
 
 ### 📚 "Find learning opportunities"
 ```bash
-/trending-digest --exclude-pattern "awesome-*,learning-*" --min-stars 50
+/trending-repos --exclude-pattern "awesome-*,learning-*" --min-stars 50
 → Real projects (not tutorials) with active communities
 ```
 
 ### 🚀 "Deep dive into one language"
 ```bash
-/trending-digest --language rust --days 14 --sort updated
+/trending-repos --language rust --days 14 --sort updated
 → Trending Rust repos, sorted by recent activity (not just stars)
 ```
