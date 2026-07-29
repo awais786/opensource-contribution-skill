@@ -65,19 +65,20 @@ Use this skill when you want to discover open source projects to contribute to. 
 ## Output Example
 
 ```
-## 📊 Trending Repos (Last 7 Days)
+## 📊 Trending Python Repositories (Daily)
 
-| Rank | Repo | Stars | Description | Language | Last Commit |
-|------|------|-------|-------------|----------|------------|
-| 1 | anthropics/skills | 1,200 | Python library for AI... | Python | 2026-07-29 |
-| 2 | vercel/next.js | 890 | React framework | TypeScript | 2026-07-28 |
+| Rank | Repo Link |
+|------|-----------|
+| 1 | [polarsource/polar](https://github.com/polarsource/polar) |
+| 2 | [huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech) |
 
-## 🎯 Top 10 Issues: anthropics/skills
+## 📋 Issues by Repository
 
-| # | Title | Labels | Updated |
-|---|-------|--------|---------|
-| 1 | Add support for .doc files | enhancement, help-wanted | 2 days ago |
-| 2 | Fix async error handling | bug | 5 days ago |
+### 1. polarsource/polar
+
+- [chore: remove dead FileRepository.get_all_by_organization method](https://github.com/polarsource/polar/pull/13442)
+- [chore: remove dead ResourceNotModified exception and handler](https://github.com/polarsource/polar/pull/13441)
+- [chore: remove unused publish_members eventstream function](https://github.com/polarsource/polar/pull/13440)
 ...
 ```
 

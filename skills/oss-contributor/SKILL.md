@@ -30,9 +30,9 @@ All features implemented and tested:
 ## What It Does
 
 - 🔥 **Scrapes GitHub's trending page** — Fast, reliable trending data
-- 📋 **Shows 5 recent issues per repo** — Real issues you can work on
+- 📋 **Shows top 10 recent issues per repo** — Real issues you can work on
 - ⚡ **Caches results** — 2-hour TTL for speed
-- 🔗 **Direct links** — Click to start contributing immediately
+- 🔗 **Clickable links** — Direct repo and issue links for instant navigation
 
 ## Setup
 
