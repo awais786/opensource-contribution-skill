@@ -135,17 +135,23 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             pass
 
 # Print results in order
-for i, repo in enumerate(repos[:15], 1):
+for i, repo in enumerate(repos[:10], 1):
     repo_path = f"{repo['owner']}/{repo['name']}"
     print(f"### {i}. {repo_path}")
     print("")
 
     issues = results.get(repo_path, [])
     if issues:
-        for issue in issues:
-            title = issue['title'][:75]
-            issue_url = issue['html_url']
-            print(f"- [{title}]({issue_url})")
+        # Filter out issues that are PRs or have PR references
+        real_issues = [issue for issue in issues if not issue.get('pull_request')]
+
+        if real_issues:
+            for issue in real_issues[:10]:  # Show up to 10 real issues
+                title = issue['title'][:75]
+                issue_url = issue['html_url']
+                print(f"- [{title}]({issue_url})")
+        else:
+            print("- (No issues without PRs - all have open PRs)")
     else:
         print("- (Could not fetch issues)")
 
