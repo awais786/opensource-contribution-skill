@@ -54,7 +54,7 @@ try:
     # Extract repo paths: /owner/repo
     repos = re.findall(r'href="(/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)"', html)
     repos = [r for r in repos if r.count('/') == 2 and not any(x in r for x in ['sponsors', 'trending', 'topics', 'issues', 'pulls', 'settings', 'apps'])]
-    repos = list(set(repos))[:15]
+    repos = list(set(repos))[:10]
 
     repos_data = []
     for repo_path in repos:
@@ -126,7 +126,7 @@ def fetch_issues(repo, github_token):
 # Fetch all issues in parallel (max 5 concurrent to avoid rate limits)
 results = {}
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-    futures = [executor.submit(fetch_issues, repo, github_token) for repo in repos[:15]]
+    futures = [executor.submit(fetch_issues, repo, github_token) for repo in repos[:10]]
     for future in concurrent.futures.as_completed(futures):
         try:
             repo_path, issues = future.result()
