@@ -9,34 +9,34 @@ Use this skill when you want to discover open source projects to contribute to. 
 
 ## Main Command
 
-**`/find-issues`** — Find trending repos and show their top 10 issues
+**`/find-repos`** — Find trending repos and show their top 10 issues
 
 ## Usage Examples
 
 ```bash
 # Basic: Show trending repos & their top issues
-/find-issues
+/find-repos
 
 # Filter by time window
-/find-issues --days 30
+/find-repos --days 30
 
 # Filter by stars (quality)
-/find-issues --min-stars 100
+/find-repos --min-stars 100
 
 # Filter by topic
-/find-issues --topic web
+/find-repos --topic web
 
 # Filter by language
-/find-issues --language rust
+/find-repos --language rust
 
 # Combine filters
-/find-issues --topic web --min-stars 50 --days 14
+/find-repos --topic web --min-stars 50 --days 14
 
 # Get issues from specific repo
-/find-issues owner/repo
+/find-repos owner/repo
 
 # Skip cache (fresh data)
-/find-issues --no-cache
+/find-repos --no-cache
 ```
 
 ## How It Works
@@ -86,19 +86,19 @@ Use this skill when you want to discover open source projects to contribute to. 
 
 ### Find easy starter issues
 ```bash
-/find-issues
+/find-repos
 # Look for "good first issue" label in the output
 ```
 
 ### Explore trending in your favorite tech
 ```bash
-/find-issues --language rust --days 14
-/find-issues --topic web --min-stars 100
+/find-repos --language rust --days 14
+/find-repos --topic web --min-stars 100
 ```
 
 ### Get established, active projects
 ```bash
-/find-issues --min-stars 100 --days 30
+/find-repos --min-stars 100 --days 30
 ```
 
 ## Performance & Cost
@@ -132,7 +132,7 @@ gh auth status  # Verify
 
 **"No issues shown"**
 - Repo may have zero open issues
-- Try a different repo with `/find-issues owner/repo`
+- Try a different repo with `/find-repos owner/repo`
 
 **"Getting old/cached results"**
 - Use `--no-cache` for fresh data
@@ -145,7 +145,7 @@ gh auth status  # Verify
 
 ## Next Steps
 
-1. Run `/find-issues` to see trending repos
+1. Run `/find-repos` to see trending repos
 2. Pick a repo from the output
 3. Find an issue labeled "good first issue" or "help-wanted"
 4. Click the link and read the issue

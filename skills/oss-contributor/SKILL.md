@@ -1,11 +1,11 @@
 ---
 name: oss-contributor
-description: Use when finding open source repos with good issues to work on—searches trending projects, filters for quality, and shows community activity.
+description: Use when finding open source repositories to contribute to—search trending projects and explore issues for any repo.
 ---
 
 # oss-contributor
 
-Find trending open source repositories where you can start contributing.
+Find and explore open source repositories where you can start contributing.
 
 ## Status: ✅ Production Ready
 
@@ -19,12 +19,15 @@ All features implemented and tested:
 ## Quick Start
 
 ```bash
-# Find trending repos from last 7 days with issues
-/find-issues --language python
+# Find trending repos from last 7 days
+/find-repos --language python
 
 # With filters
-/find-issues --language rust --days 30
-/find-issues --no-cache  # Fresh data
+/find-repos --language rust --days 30
+/find-repos --no-cache  # Fresh data
+
+# Deep dive into a specific repo
+/repo-details owner/repo
 ```
 
 ## What It Does
@@ -72,3 +75,8 @@ Get a token: https://github.com/settings/tokens (scope: `repo`, `read:org`)
 - **Caching:** Smart 2-hour TTL at `~/.oss-contributor/cache/`
 - **Cost:** Free (no API calls for scraping; optional GitHub token for issues)
 - **Speed:** Instant for cached; 4-20s for fresh queries (depends on token)
+
+## Related Skills
+
+- **`repo-details`** — Deep dive into a specific repo: stats, description, and top 10 issues
+- Use `/find-repos` to discover trending projects, then `/repo-details owner/repo` to explore
