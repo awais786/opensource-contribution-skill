@@ -44,7 +44,7 @@ Use this skill when you want to discover open source projects to contribute to. 
 ### Step 1: Find Trending Repos
 - Searches GitHub for repos created in the last N days
 - Filters by stars, language, and topics
-- Returns top 10-15 results, ranked by stars
+- Returns top 10 results, ranked by stars
 
 ### Step 2: Show Top 10 Issues
 - Lists the most recently updated issues
