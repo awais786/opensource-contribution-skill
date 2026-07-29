@@ -5,18 +5,31 @@ Find trending open source projects and make smarter contributions with Claude Co
 ## Installation
 
 ```bash
+# 1. Copy skill to Claude Code
 cp -r skills/oss-contributor ~/.claude/skills/
+
+# 2. Authenticate with GitHub
 gh auth login
+gh auth status  # Verify
+
+# 3. Use in Claude Code (CLI, IDE extension, or claude.ai/code)
 ```
 
-## Quick Start
+## How to Use
 
-```bash
-# Find trending repos (last 7 days)
+**In Claude Code terminal/chat:**
+
+```
 /trending-digest
 
-# With filters
 /trending-digest --days 30 --topic web --min-stars 100 --stats-only
+```
+
+Or ask Claude directly:
+```
+Show me trending repos
+Show me trending web frameworks
+What's hot in Python right now?
 ```
 
 ## `/trending-digest` Command
