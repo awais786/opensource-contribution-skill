@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# trending-digest.sh - Fetch trending GitHub repositories by scraping GitHub's trending page
-# Shows top 10 recent issues per repo with direct links
+# find-repos.sh - Fetch trending GitHub repositories by scraping GitHub's trending page
+# Shows top 10 recent issues per repo with direct links (parallel fetching for speed)
 
 set -e
 
@@ -88,6 +88,8 @@ import urllib.request
 import re
 from datetime import datetime
 import os
+import concurrent.futures
+from functools import partial
 
 repos_json = '''$REPOS_JSON'''
 repos = json.loads(repos_json)
@@ -100,36 +102,52 @@ for i, repo in enumerate(repos, 1):
     print(f"| {i} | [{owner}/{name}]({url}) |")
 
 print("")
-print("## 📋 Issues by Repository")
+print("## 📋 Top 10 Issues by Repository")
 print("")
 
-for i, repo in enumerate(repos[:15], 1):  # Show issues for all 15
+# Fetch issues in parallel for speed
+def fetch_issues(repo, github_token):
     owner = repo['owner']
     name = repo['name']
     repo_path = f"{owner}/{name}"
 
-    print(f"### {i}. {repo_path}")
-    print("")
-
-    # Fetch issues from GitHub API
     try:
         api_url = f"https://api.github.com/repos/{repo_path}/issues?per_page=10&state=open&sort=updated&direction=desc"
         req = urllib.request.Request(api_url)
         if github_token:
             req.add_header('Authorization', f'token {github_token}')
         req.add_header('Accept', 'application/vnd.github.v3+json')
-        response = urllib.request.urlopen(req, timeout=5)
+        response = urllib.request.urlopen(req, timeout=3)
         issues = json.loads(response.read().decode('utf-8'))
-
-        if issues:
-            for issue in issues:
-                title = issue['title'][:75]
-                issue_url = issue['html_url']
-                print(f"- [{title}]({issue_url})")
-        else:
-            print("- No open issues found")
+        return (repo_path, issues)
     except Exception as e:
-        print(f"- (Could not fetch issues)")
+        return (repo_path, [])
+
+# Fetch all issues in parallel (max 5 concurrent to avoid rate limits)
+results = {}
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    futures = [executor.submit(fetch_issues, repo, github_token) for repo in repos[:15]]
+    for future in concurrent.futures.as_completed(futures):
+        try:
+            repo_path, issues = future.result()
+            results[repo_path] = issues
+        except:
+            pass
+
+# Print results in order
+for i, repo in enumerate(repos[:15], 1):
+    repo_path = f"{repo['owner']}/{repo['name']}"
+    print(f"### {i}. {repo_path}")
+    print("")
+
+    issues = results.get(repo_path, [])
+    if issues:
+        for issue in issues:
+            title = issue['title'][:75]
+            issue_url = issue['html_url']
+            print(f"- [{title}]({issue_url})")
+    else:
+        print("- (Could not fetch issues)")
 
     print("")
 
@@ -138,6 +156,6 @@ print(f"- **Repos found:** {len(repos)}")
 print(f"- **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}")
 print(f"- **Cache:** $CACHE_STATUS")
 if not github_token:
-    print(f"- **Tip:** Add GitHub token for 4-5x faster fetching. See /find-issues for setup.")
+    print(f"- **Tip:** Add GitHub token for faster fetching. Run: gh auth login")
 
 PYTHONEOF
