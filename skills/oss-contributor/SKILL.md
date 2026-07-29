@@ -1,20 +1,25 @@
 ---
 name: oss-contributor
-description: Use when finding open source repositories to contribute to—search trending projects and explore issues for any repo.
+description: Use when looking for open source projects to contribute to, not knowing which ones are active or trending
 ---
 
 # oss-contributor
 
-Find and explore open source repositories where you can start contributing.
+Discover active open source repositories and explore their issues to find contribution opportunities.
 
-## Status: ✅ Production Ready
+## When to Use
 
-All features implemented and tested:
-- Web scraping for fast, reliable trending data
-- Optional GitHub token for issue fetching
-- Smart 2-hour caching
-- Cross-platform support (macOS/Linux)
-- No external dependencies (Python 3 built-in)
+**Triggering symptoms:**
+- "I want to contribute to open source but don't know which repos"
+- "What's trending in Python/Rust/[language]?"
+- "Show me repos with good first issues"
+- "I found a repo—what are the top issues there?"
+
+**Perfect for:**
+- Discovering active projects (trending, not abandoned)
+- Finding repos in your favorite tech stack
+- Filtering by quality (stars, activity level)
+- Exploring a specific repo's issues before contributing
 
 ## Quick Start
 
@@ -66,7 +71,7 @@ Get a token: https://github.com/settings/tokens (scope: `repo`, `read:org`)
 | Setup | Time | Issues Detail |
 |-------|------|---------------|
 | No token (rate-limited) | 18-20s | ❌ Fails to load |
-| With GitHub token | 4-5s | ✅ Shows all 5 issues |
+| With GitHub token | 4-5s | ✅ Shows all 10 issues |
 | Cached results | <1s | ✅ Instant |
 
 ## Configuration
@@ -75,6 +80,15 @@ Get a token: https://github.com/settings/tokens (scope: `repo`, `read:org`)
 - **Caching:** Smart 2-hour TTL at `~/.oss-contributor/cache/`
 - **Cost:** Free (no API calls for scraping; optional GitHub token for issues)
 - **Speed:** Instant for cached; 4-20s for fresh queries (depends on token)
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| "No repos found" | Try `--days 30` instead of 7, or remove `--min-stars` filter |
+| "Issues show as (Could not fetch)" | Add GitHub token with `gh auth login` for full issue data |
+| "Repos are old/stale" | Use `--no-cache` to bypass 2-hour cache and get fresh data |
+| "Want to find good first issues" | Run `/repo-details owner/repo` after finding trending repos |
 
 ## Related Skills
 
