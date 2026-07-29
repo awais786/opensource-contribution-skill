@@ -18,38 +18,40 @@ Discover active open source repositories and explore their issues to find contri
 **Perfect for:**
 - Discovering active projects (trending, not abandoned)
 - Finding repos in your favorite tech stack
-- Filtering by quality (stars, activity level)
+- Seeing which issues are actually unclaimed before you start
 - Exploring a specific repo's issues before contributing
 
 ## Quick Start
 
 ```bash
-# Find trending repos from last 7 days
+# Today's trending repos for a language
 /find-repos --language python
+/find-repos --language rust
 
-# With filters
-/find-repos --language rust --days 30
-/find-repos --no-cache  # Fresh data
+# Fresh data, bypassing the 2-hour cache
+/find-repos --no-cache
 
 # Deep dive into a specific repo
 /repo-details owner/repo
 ```
 
+`--language` and `--no-cache` are the only options.
+
 ## What It Does
 
 - 🔥 **Scrapes GitHub's trending page** — Fast, reliable trending data
-- 📋 **Shows top 10 recent issues per repo** — Real issues you can work on
-- ⚡ **Caches results** — 2-hour TTL for speed
+- 📋 **Shows up to 10 available issues per repo** — Open, unassigned, and not pull requests
+- ⚡ **Caches results** — 2-hour TTL for speed, keyed per language
 - 🔗 **Clickable links** — Direct repo and issue links for instant navigation
 
 ## Setup
 
 **No setup required** — works out of the box with Python 3.
 
-**Optional: Add GitHub token for 4-5x faster performance**
+**Optional: Add a GitHub token to raise the API rate limit**
 
-Without token: ~18-20s (API rate-limited, no issue details)
-With token: ~4-5s (full issue data fetched in parallel)
+Without token: 60 API requests/hour — enough for a handful of runs before 403s
+With token: 5000 API requests/hour
 
 ### How to Add Token
 
@@ -68,11 +70,11 @@ Get a token: https://github.com/settings/tokens (scope: `repo`, `read:org`)
 
 ## Performance
 
-| Setup | Time | Issues Detail |
-|-------|------|---------------|
-| No token (rate-limited) | 18-20s | ❌ Fails to load |
-| With GitHub token | 4-5s | ✅ Shows all 10 issues |
-| Cached results | <1s | ✅ Instant |
+| Setup | Fresh query | Issue detail |
+|-------|-------------|--------------|
+| No token | ~5-15s | ✅ Works, until the 60/hr limit is hit |
+| With GitHub token | ~5-15s | ✅ Works, 5000/hr limit |
+| Cached repo list | ~2-10s | ✅ Skips the scrape, still fetches issues |
 
 ## Configuration
 
@@ -85,10 +87,11 @@ Get a token: https://github.com/settings/tokens (scope: `repo`, `read:org`)
 
 | Mistake | Fix |
 |---------|-----|
-| "No repos found" | Try `--days 30` instead of 7, or remove `--min-stars` filter |
-| "Issues show as (Could not fetch)" | Add GitHub token with `gh auth login` for full issue data |
+| "No repos found" | That language has no trending entries today; try another, or `--no-cache` |
+| "Issues show as (Could not fetch)" | Usually rate limiting — run `gh auth login` |
+| "No open, unassigned issues found" | Not an error: every open issue there is already claimed |
 | "Repos are old/stale" | Use `--no-cache` to bypass 2-hour cache and get fresh data |
-| "Want to find good first issues" | Run `/repo-details owner/repo` after finding trending repos |
+| "Want to find good first issues" | Run `/repo-details owner/repo` — it shows each issue's labels |
 
 ## Related Skills
 

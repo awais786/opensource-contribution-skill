@@ -5,7 +5,7 @@ description: Use when you've chosen a specific repository and want to understand
 
 # Repository Details
 
-Get detailed information about a specific GitHub repository: stats, description, top 10 recent issues, and getting started guide.
+Get detailed information about a specific GitHub repository: stats, description, up to 10 open and unassigned issues, and a getting started guide.
 
 ## When to Use
 
@@ -28,27 +28,30 @@ Get detailed information about a specific GitHub repository: stats, description,
 /repo-details owner/repo-name
 ```
 
+The argument must be a plain `owner/repo` slug; a URL is rejected.
+
 ## Output Format
 
 1. **Project name & GitHub link** — Direct link to repo
 2. **Stats** — Stars, forks, language, open issue count
-3. **Top 10 Recent Issues** — With labels for quick filtering
+3. **Up to 10 Issues to Work On** — Open, unassigned, not pull requests, with labels
 4. **Getting Started Guide** — Clone, setup, and contribution workflow
 5. **Timestamp** — When data was fetched
 
-## Setup Required
+## Setup
 
-- **GitHub CLI**: `gh auth login` (must authenticate first)
+- **None required** — works unauthenticated at 60 API requests/hour
+- **Optional**: `gh auth login` (or `GITHUB_TOKEN`) raises that to 5000/hour
 - **Performance**: ~2-3 seconds per query (direct API call, not cached)
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| "Command not found" | Run `/find-repos` first to discover repos, THEN use this command |
-| "Authentication error" | Run `gh auth login` and verify with `gh auth status` |
-| "No issues shown" | Repo may have zero open issues; try a different repo |
-| "Rate limited" | GitHub has 60 req/hr unauthenticated, 5000 req/hr authenticated |
+| "repo must be in owner/repo form" | Pass the slug only, e.g. `fastapi/fastapi` |
+| "HTTP Error 404" | Check the spelling, or the repo is private |
+| "No open, unassigned issues found" | Not an error: every open issue there is claimed |
+| "Rate limited" (403) | Run `gh auth login` — 60 req/hr unauthenticated, 5000 authenticated |
 
 ## Workflow
 

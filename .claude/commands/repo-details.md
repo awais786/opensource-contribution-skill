@@ -1,11 +1,22 @@
 ---
 name: repo-details
 description: Use when you've chosen a specific repository and want to understand its scope, active issues, and contribution entry points
+argument-hint: "owner/repo"
+allowed-tools: Bash(bash skills/oss-contributor/scripts/repo-details.sh:*)
 ---
 
 # Repository Details
 
 Get comprehensive information about any GitHub repository to evaluate it and find issues to work on.
+
+## Result
+
+!`bash skills/oss-contributor/scripts/repo-details.sh "$ARGUMENTS"`
+
+Present the output above to the user as-is, preserving the markdown and links.
+Do not re-fetch anything from GitHub yourself — the script is the source of
+truth. If it exited with an error (bad slug, 404, rate limit), report that error
+rather than answering from memory.
 
 ## Quick Start
 
@@ -16,12 +27,15 @@ Get comprehensive information about any GitHub repository to evaluate it and fin
 /repo-details owner/repo-name
 ```
 
+The argument must be a plain `owner/repo` slug — a full URL or anything with
+other characters is rejected.
+
 ## What You Get
 
 1. **Project Name & GitHub Link** — Direct link to the repository
 2. **Project Stats** — Stars, forks, language, open issue count
 3. **Description** — What the project does and its focus
-4. **Top 10 Recent Issues** — With labels for easy filtering
+4. **Up to 10 Issues to Work On** — Open, unassigned, not pull requests, with labels
 5. **Getting Started Guide** — Clone, setup, and contribution workflow
 6. **Timestamp** — When data was fetched
 
@@ -39,11 +53,12 @@ Get comprehensive information about any GitHub repository to evaluate it and fin
 - "What does this project focus on?"
 - "How do I contribute to this specific repo?"
 
-## Setup Required
+## Setup
 
-1. GitHub CLI must be installed
-2. Authenticate with: `gh auth login`
-3. Verify with: `gh auth status`
+No setup required — this works unauthenticated.
+
+**Optional:** run `gh auth login` (or export `GITHUB_TOKEN`) to raise the GitHub
+API rate limit from 60 requests/hour to 5000.
 
 ## Performance
 
@@ -55,10 +70,10 @@ Get comprehensive information about any GitHub repository to evaluate it and fin
 
 | Issue | Solution |
 |-------|----------|
-| "Command not found" | Run `/find-repos` first to discover repos, THEN use this command |
-| "Authentication error" | Run `gh auth login` and verify with `gh auth status` |
-| "No issues shown" | Repo may have zero open issues; try a different repo |
-| "Rate limited" | Add GitHub token for higher rate limits |
+| "repo must be in owner/repo form" | Pass just the slug, e.g. `fastapi/fastapi`, not a URL |
+| "HTTP Error 404" | Check the spelling, or the repo is private |
+| "No open, unassigned issues found" | Every open issue is claimed; try a different repo |
+| "HTTP Error 403" (rate limited) | Run `gh auth login` for the higher authenticated limit |
 
 ## Workflow
 

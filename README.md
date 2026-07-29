@@ -12,14 +12,18 @@ All skills fully tested and operational:
 - ✅ GitHub trending page scraping (fast, reliable)
 - ✅ Repository details with GitHub API
 - ✅ Smart 2-hour caching
-- ✅ Multi-language and topic filtering
+- ✅ Per-language trending, with unassigned-issue filtering
 - ✅ Cross-platform support (macOS/Linux)
 - ✅ Comprehensive documentation
 - ✅ Professional skill documentation (SDO-compliant)
 
 ## Quick Start
 
-### 1. Setup (one-time)
+### 1. Setup (optional)
+
+Nothing is required — Python 3 is the only dependency and both commands work
+unauthenticated. A GitHub token only raises the API rate limit from 60
+requests/hour to 5000:
 
 ```bash
 # Install GitHub CLI if you don't have it
@@ -27,7 +31,7 @@ brew install gh        # macOS
 sudo apt install gh    # Linux
 choco install gh       # Windows
 
-# Authenticate with GitHub
+# Authenticate — the scripts auto-detect this token
 gh auth login
 gh auth status  # Verify it works
 ```
@@ -36,13 +40,14 @@ gh auth status  # Verify it works
 
 **Step 1: Find Trending Repos**
 ```bash
-# Find trending repos from the last 7 days
+# Today's trending Python repos
 /find-repos
 
-# With filters
-/find-repos --days 30 --topic web --min-stars 100
+# A different language
 /find-repos --language rust
-/find-repos --language python --min-stars 50 --days 14
+
+# Skip the 2-hour cache
+/find-repos --no-cache
 ```
 
 **Step 2: Explore a Specific Repo**
@@ -68,8 +73,8 @@ gh auth status  # Verify it works
 | 3 | [fastapi/fastapi](https://github.com/fastapi/fastapi) |
 | ... | ... |
 
-## Top 10 Issues per Repo
-(Shows 10 recent issues with direct links for each trending repo)
+## Top 10 Open Issues by Repository
+(Unassigned issues only - no pull requests)
 ```
 
 ### From `/repo-details owner/repo` Command
@@ -84,7 +89,7 @@ gh auth status  # Verify it works
 - 📋 4,701 open issues (active development)
 
 ## Top 10 Issues to Work On
-(Recent issues with labels and direct GitHub links)
+(Unassigned issues only - no pull requests - with labels and direct GitHub links)
 
 ## Getting Started
 1. Clone and explore
@@ -97,12 +102,11 @@ gh auth status  # Verify it works
 
 | Option | Values | Default | Purpose |
 |--------|--------|---------|---------|
-| `--days` | 1, 3, 7, 14, 30 | 7 | Time window for trending repos |
-| `--min-stars` | Any number | 0 | Minimum stars (quality filter) |
-| `--topic` | web, rust, cli, database, javascript, python, etc. | (none) | GitHub topic to focus on |
-| `--language` | python, javascript, rust, go, java, etc. | (none) | Single language filter |
+| `--language` | python, javascript, rust, go, java, etc. | python | Which GitHub trending page to scrape |
 | `--no-cache` | (flag) | false | Skip 2-hour cache, get fresh data |
-| `--exclude-pattern` | Pattern string | (none) | Skip repos matching pattern |
+
+These are the only options. GitHub's trending page is already ranked and scoped
+to the last day, so there is nothing to filter by stars, topic, or time window.
 
 ## Common Workflows
 
@@ -110,55 +114,42 @@ gh auth status  # Verify it works
 ```bash
 /find-repos
 ```
-Last 7 days, all languages, all quality levels.
-
-### "Find quality projects to learn from"
-```bash
-/find-repos --min-stars 100 --days 30
-```
-Established projects with active development.
-
-### "What's hot in web development?"
-```bash
-/find-repos --topic web --min-stars 100 --days 14
-```
-Trending web frameworks and tools.
+Today's trending Python repos.
 
 ### "Find Rust projects"
 ```bash
-/find-repos --language rust --days 30
+/find-repos --language rust
 ```
-All trending Rust repos with established activity.
-
-### "Get cutting-edge projects"
-```bash
-/find-repos --days 1 --min-stars 50
-```
-Brand new projects trending today (higher risk, but cutting-edge).
 
 ### "Skip cache for fresh data"
 ```bash
 /find-repos --no-cache
 ```
-Query GitHub API immediately instead of using 2-hour cache.
+Re-scrape now instead of using the 2-hour cache.
+
+### "Which issues can I actually take?"
+```bash
+/repo-details owner/repo
+```
+Only open, unassigned, non-PR issues are listed — so nothing you see is
+already claimed by someone else.
 
 ## Cost & Performance
 
-- **Fresh query:** ~$0.001 per run (uses Claude Haiku for formatting)
-- **Cached results:** Free & instant (2-hour TTL)
-- **GitHub API:** No cost, rate limited by authentication
-- **Speed:** Cached results return instantly; fresh queries take ~2-3 seconds
+- **Fresh query:** free; ~5-15s (scrape + 10 parallel issue fetches)
+- **Cached repo list:** 2-hour TTL, per language
+- **GitHub API:** No cost. 60 requests/hour unauthenticated, 5000 authenticated
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| **"gh command not found"** | Install GitHub CLI (see Setup above) |
-| **"Not authenticated"** | Run `gh auth login` then `gh auth status` to verify |
-| **"No repos found"** | Try `--days 30` (broader window) or remove `--min-stars` filter |
+| **"No repos found"** | That language has no trending entries today; try another or `--no-cache` |
+| **"No open, unassigned issues found"** | Not an error — every open issue there is already claimed |
+| **"Could not fetch issues: HTTP Error 403"** | Rate limited; run `gh auth login` for the 5000/hr limit |
+| **"repo must be in owner/repo form"** | `/repo-details` takes a slug, not a URL |
 | **"Getting stale cached results"** | Use `--no-cache` to bypass cache and query GitHub immediately |
-| **"GitHub API rate limit"** | Wait 1 hour or authenticate with `gh auth login` |
-| **"Multiple `--language` filters don't work"** | Only ONE language at a time supported; use `--topic` for broader categories |
+| **"Multiple `--language` filters don't work"** | Only ONE language at a time is supported |
 
 ## Contribution Workflow
 
@@ -192,15 +183,15 @@ opensource-contribution-skill/
 ## How It Works
 
 ### /find-repos Command
-1. **Scrapes GitHub trending** — Gets trending repos from GitHub's trending page
-2. **Filters by criteria** — Language, stars, topic, activity level
-3. **Fetches top 10 issues** — Shows recent issues for each repo with links
-4. **Caches results** — 2-hour TTL to avoid rate limits
-5. **Shows stats** — Total repos found, stars distribution
+1. **Scrapes GitHub trending** — Gets the top 10 repos for the chosen language, in GitHub's own order
+2. **Fetches issues in parallel** — 5 concurrent requests across the 10 repos
+3. **Filters to available work** — Asks the API for `assignee=none`, then drops pull requests
+4. **Caches the repo list** — 2-hour TTL, keyed per language
+5. **Shows stats** — Repos found, generation time, cache status
 
 ### /repo-details Command
 1. **Fetches repo metadata** — GitHub API: stars, forks, language, description
-2. **Retrieves top 10 issues** — Recent, open issues sorted by update time
+2. **Retrieves up to 10 issues** — Open, unassigned, non-PR, sorted by update time
 3. **Shows labels** — Quick filtering: `bug`, `enhancement`, `good first issue`, etc.
 4. **Provides setup guide** — Clone, develop, and contribute instructions
 5. **Direct GitHub links** — Click any issue to read full details
@@ -211,30 +202,34 @@ opensource-contribution-skill/
 - **Script:** `find-repos.sh` (Bash + Python)
 - **Method:** Web scraping GitHub's trending page (no API key needed)
 - **Cache:** 2-hour TTL at `~/.oss-contributor/cache/trending/`
-- **Optional:** GitHub token speeds up issue fetching 4-5x
+- **Optional:** GitHub token raises the issue-fetch rate limit
 
 ### repo-details Command
 - **Script:** `repo-details.sh` (Bash + Python)
-- **API:** GitHub REST API (requires authentication)
+- **API:** GitHub REST API (works unauthenticated)
 - **Speed:** ~2-3 seconds per query (not cached)
-- **Requirements:** `gh auth login` for GitHub CLI token
+- **Input:** a plain `owner/repo` slug; anything else is rejected
 
 ### Common
-- **Dependencies:** GitHub CLI (`gh`), Python 3.6+
+- **Dependencies:** Python 3.6+. GitHub CLI (`gh`) optional, for the token only
 - **Cache location:** `~/.oss-contributor/cache/`
 - **Platforms:** macOS, Linux
-- **Model:** Claude Haiku for formatting
+- **Issue filter:** open + unassigned + not a pull request
+
+The scripts request 50 issues and filter down to 10, rather than requesting 10
+and filtering those — GitHub's issues endpoint returns pull requests in the same
+list, so filtering a 10-item page would leave a busy repo showing almost nothing.
 
 ## Testing
 
-All functionality has been tested and verified:
+Verified manually against live GitHub:
 - ✅ Basic repo trending
-- ✅ Language filtering (single language)
-- ✅ Topic filtering
-- ✅ Star count filtering
-- ✅ Cache functionality (2-hour TTL)
-- ✅ Input validation (non-negative integers)
-- ✅ Cross-platform support (macOS/Linux)
+- ✅ Language selection (`--language rust` scrapes and caches Rust separately)
+- ✅ Cache functionality (2-hour TTL, per-language cache files)
+- ✅ Issue filtering (PRs and assigned issues excluded)
+- ✅ Empty results distinguished from fetch failures
+- ✅ Input validation (`owner/repo` slug enforced)
+- ✅ Cross-platform support (macOS/Linux `stat`)
 - ✅ Python 3.12+ compatibility
 
 ## Contributing

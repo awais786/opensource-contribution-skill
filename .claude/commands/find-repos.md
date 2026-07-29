@@ -1,43 +1,55 @@
 ---
 name: find-repos
 description: Use when looking for open source projects to contribute to, not knowing which ones are active or trending
+argument-hint: "[--language <lang>] [--no-cache]"
+allowed-tools: Bash(bash skills/oss-contributor/scripts/find-repos.sh:*)
 ---
 
 # Find Trending Repositories
 
 Discover active open source repositories where you can start contributing.
 
+## Result
+
+!`bash skills/oss-contributor/scripts/find-repos.sh $ARGUMENTS`
+
+Present the output above to the user as-is, preserving the markdown tables and
+links. Do not re-fetch anything from GitHub yourself — the script is the source
+of truth. If the script reported a fetch error for a repo, say so plainly rather
+than substituting your own guess at its issues.
+
 ## Quick Start
 
 ```bash
-# Find trending repos from last 7 days
+# Trending Python repos (the default)
 /find-repos
 
-# With filters
-/find-repos --days 30 --topic web --min-stars 100
+# A different language
 /find-repos --language rust
-/find-repos --language python --min-stars 50 --days 14
 
-# Then explore a specific repo
-/repo-details owner/repo
+# Skip the 2-hour cache
+/find-repos --no-cache
 ```
 
 ## Command Options
 
 | Option | Values | Default | Purpose |
 |--------|--------|---------|---------|
-| `--days` | 1, 3, 7, 14, 30 | 7 | Time window for trending repos |
-| `--min-stars` | Any number | 0 | Minimum stars (quality filter) |
-| `--topic` | web, rust, cli, database, etc. | (none) | GitHub topic to focus on |
-| `--language` | python, rust, javascript, go, etc. | (none) | Single language filter |
-| `--no-cache` | (flag) | false | Skip 2-hour cache, get fresh data |
+| `--language` | python, rust, javascript, go, etc. | python | Which GitHub trending page to scrape |
+| `--no-cache` | (flag) | false | Skip the 2-hour cache, re-scrape now |
+
+There are no other options. Trending data comes from GitHub's own trending page,
+which is already ranked and scoped to the last day, so there is nothing to filter
+by stars, topic, or time window.
 
 ## What You Get
 
-- **15 Trending Repos** — Clickable links for each repository
-- **Top 10 Issues per Repo** — Recent issues with direct GitHub links
-- **Project Stats** — Stars, forks, language, open issue count
-- **Cached Results** — Fast, repeatable queries with 2-hour TTL
+- **10 Trending Repos** — Clickable links, in GitHub's trending order
+- **Up to 10 Issues per Repo** — Open, unassigned, and not pull requests
+- **Cached Results** — Fast, repeatable queries with a 2-hour TTL per language
+
+Issues are filtered so what you see is genuinely available work: pull requests
+are excluded, and so is anything already assigned to someone.
 
 ## Common Workflows
 
@@ -45,29 +57,22 @@ Discover active open source repositories where you can start contributing.
 ```bash
 /find-repos
 ```
-Last 7 days, all languages, all quality levels.
-
-### "Find quality projects to learn from"
-```bash
-/find-repos --min-stars 100 --days 30
-```
-Established projects with active development.
-
-### "What's hot in web development?"
-```bash
-/find-repos --topic web --min-stars 100 --days 14
-```
 
 ### "Find Rust projects"
 ```bash
-/find-repos --language rust --days 30
+/find-repos --language rust
+```
+
+### "I looked an hour ago, give me fresh data"
+```bash
+/find-repos --no-cache
 ```
 
 ## Performance
 
 - **Cached results:** <1 second (instant)
-- **Fresh query:** ~2-3 seconds
-- **GitHub token:** Makes it 4-5x faster
+- **Fresh query:** ~5-15 seconds (scrape + 10 parallel issue fetches)
+- **GitHub token:** Raises the API rate limit from 60/hr to 5000/hr
 
 ## Next Steps
 
@@ -81,7 +86,7 @@ Established projects with active development.
 
 No setup needed! Python 3 works out of the box.
 
-**Optional: Add GitHub token for faster performance**
+**Optional: add a GitHub token to avoid rate limits**
 ```bash
 gh auth login
 ```

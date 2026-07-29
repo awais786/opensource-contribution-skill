@@ -12,6 +12,12 @@ if [[ -z "$REPO" ]]; then
   exit 1
 fi
 
+# Reject anything that is not a plain owner/repo slug before it reaches the API
+if [[ ! "$REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]; then
+  echo "Error: repo must be in owner/repo form (got: $REPO)" >&2
+  exit 1
+fi
+
 # Auto-detect GitHub token from environment or gh CLI
 if [[ -z "$GITHUB_TOKEN" ]]; then
   if command -v gh &> /dev/null; then
@@ -19,13 +25,18 @@ if [[ -z "$GITHUB_TOKEN" ]]; then
   fi
 fi
 
-python3 << PYTHONEOF
+REPO="$REPO" GITHUB_TOKEN="$GITHUB_TOKEN" python3 << 'PYTHONEOF'
 import urllib.request
 import json
+import os
+import sys
 from datetime import datetime
 
-github_token = '''${GITHUB_TOKEN}'''
-repo = '''${REPO}'''
+ISSUE_LIMIT = 10      # issues to show
+FETCH_PER_PAGE = 50   # over-fetch, because PRs get filtered out below
+
+github_token = os.environ.get('GITHUB_TOKEN', '')
+repo = os.environ.get('REPO', '')
 
 try:
     # Fetch repo metadata
@@ -34,7 +45,7 @@ try:
     if github_token:
         req.add_header('Authorization', f'token {github_token}')
     req.add_header('Accept', 'application/vnd.github.v3+json')
-    response = urllib.request.urlopen(req, timeout=5)
+    response = urllib.request.urlopen(req, timeout=10)
     repo_data = json.loads(response.read().decode('utf-8'))
 
     # Extract key info
@@ -60,37 +71,37 @@ try:
     print(f"- Focus: {description}")
     print("")
 
-    # Fetch top 10 issues
-    issues_url = f"https://api.github.com/repos/{repo}/issues?per_page=10&state=open&sort=updated&direction=desc"
+    # Fetch issues. assignee=none filters server-side; the endpoint still returns
+    # PRs, so over-fetch and drop them below rather than truncating first.
+    issues_url = (
+        f"https://api.github.com/repos/{repo}/issues"
+        f"?per_page={FETCH_PER_PAGE}&state=open&sort=updated&direction=desc&assignee=none"
+    )
     req = urllib.request.Request(issues_url)
     if github_token:
         req.add_header('Authorization', f'token {github_token}')
     req.add_header('Accept', 'application/vnd.github.v3+json')
-    response = urllib.request.urlopen(req, timeout=5)
-    issues = json.loads(response.read().decode('utf-8'))
+    response = urllib.request.urlopen(req, timeout=10)
+    items = json.loads(response.read().decode('utf-8'))
+    real_issues = [item for item in items if not item.get('pull_request')]
 
     # Print issues section
-    print("## 🎯 Top 10 Issues to Work On")
-    print("(No pull requests - only unassigned issues)")
+    print(f"## 🎯 Top {ISSUE_LIMIT} Issues to Work On")
+    print("(Unassigned issues only - no pull requests)")
     print("")
 
-    if issues:
-        # Filter out issues that are PRs or have PR references
-        real_issues = [issue for issue in issues if not issue.get('pull_request')]
-
-        if real_issues:
-            for i, issue in enumerate(real_issues[:10], 1):
-                title = issue['title']
-                url = issue['html_url']
-                labels = [label['name'] for label in issue.get('labels', [])]
-                label_str = ', '.join(labels) if labels else 'no labels'
-                print(f"{i}. **[{title}]({url})**")
-                print(f"   - Labels: {label_str}")
-                print("")
-        else:
-            print("- No issues without PRs - all open issues have PRs in progress")
+    if real_issues:
+        for i, issue in enumerate(real_issues[:ISSUE_LIMIT], 1):
+            title = issue['title']
+            url = issue['html_url']
+            labels = [label['name'] for label in issue.get('labels', [])]
+            label_str = ', '.join(labels) if labels else 'no labels'
+            print(f"{i}. **[{title}]({url})**")
+            print(f"   - Labels: {label_str}")
+            print("")
     else:
-        print("- No open issues found")
+        print("- No open, unassigned issues found")
+        print("")
 
     # Print getting started
     print("## Getting Started")
@@ -121,7 +132,7 @@ try:
     print(f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}*")
 
 except Exception as e:
-    print(f"Error fetching repo details: {e}")
-    exit(1)
+    print(f"Error fetching repo details: {e}", file=sys.stderr)
+    sys.exit(1)
 
 PYTHONEOF
