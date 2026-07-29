@@ -1,11 +1,11 @@
 ---
-name: Find Open Source Issues
-description: Discover trending repos and their top 10 issues to contribute to
+name: Find Trending Open Source Repos
+description: Discover trending repositories where you can contribute—filter by language, stars, and topics
 ---
 
-# Find Good Repos & Issues to Contribute
+# Find Trending Open Source Repositories
 
-Use this skill when you want to find open source repositories with good issues to work on.
+Use this skill when you want to discover open source projects to contribute to. Shows trending repos ranked by activity and community engagement.
 
 ## Main Command
 

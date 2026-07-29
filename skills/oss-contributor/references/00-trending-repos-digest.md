@@ -1,27 +1,28 @@
-# Trending Repos Digest
+# /find-issues Implementation Details
 
-Quick daily view of what's trending in open source with flexible filtering and insights.
+Technical reference for how the `/find-issues` command discovers trending repositories.
 
-**Cost:** ~$0.001 per run (uses Haiku, formatting only—no reasoning)  
-**Time:** ~10 seconds (cached results available instantly)  
-**Setup:** Requires `gh` CLI authenticated with GitHub
+**Cost:** ~$0.001 per fresh query (uses Haiku for formatting only)  
+**Speed:** Instant for cached results (2-hour TTL); ~2-3s for fresh queries  
+**Requirements:** GitHub CLI (`gh`) installed and authenticated
 
 ---
 
 ## Quick Start
 
 ```bash
-# Default: top 15 Python + 15 non-Python repos (last 7 days)
-/trending-repos
+# Find trending repos (last 7 days, all languages)
+/find-issues
 
-# With options
-/trending-repos --days 30 --min-stars 100 --topic web
+# With filters
+/find-issues --days 30 --min-stars 100 --topic web
+/find-issues --language rust --days 14
 
-# Show stats only
-/trending-repos --stats
+# Fresh data (skip 2-hour cache)
+/find-issues --no-cache
 
-# Exclude educational repos
-/trending-repos --exclude-pattern "awesome-*"
+# Exclude patterns
+/find-issues --exclude-pattern "awesome-*"
 ```
 
 ---
@@ -29,25 +30,66 @@ Quick daily view of what's trending in open source with flexible filtering and i
 ## What "Trending" Means
 
 - **Created date:** Configurable time window (1, 3, 7, 14, 30 days)
-- **Sorted by:** Stars descending (most-starred first)
-- **Top:** 15 Python + 15 non-Python (separate queries to prevent Python dominance)
-- **Filtered:** By minimum stars, topics, language patterns
-- **Cached:** Results cached for 2 hours to save API quota
+- **Sorted by:** Stars descending (highest-starred first)
+- **Limit:** Top 15 repos matching criteria
+- **Filtered by:** Minimum stars, topics, language (one at a time)
+- **Cached:** Results cached for 2 hours to save GitHub API quota
 
 ---
 
-## Workflow
+## How It Works
 
-### Default Behavior (No Options)
+### Step 1: Check Cache
 ```
-1. Check cache for recent results (2-hour TTL)
-   
-2. Query GitHub (if not cached):
-   - Top 15 Python repos from last 7 days (sorted by stars)
-   - Top 15 non-Python repos from last 7 days (sorted by stars)
-   
-3. Calculate aggregate stats:
+If --no-cache flag:
+  → Skip cache, go to Step 2
+
+Otherwise:
+  → Look for cached results at ~/.oss-contributor/cache/trending/
+  → If cache age < 2 hours (7200 seconds) → Return cached results
+  → Otherwise → Go to Step 2
+```
+
+### Step 2: Query GitHub
+```
+1. Build GitHub search query:
+   - Time window: created:>{DATE}
+   - Quality filter: stars:>={MIN_STARS} (if --min-stars > 0)
+   - Topic filter: topic:{TOPIC} (if specified)
+   - Language filter: language:{LANG} (if --language specified)
+
+2. Execute: gh search repos {QUERY} --sort stars --limit 15
+
+3. Return up to 15 matching repos, sorted by stars descending
+```
+
+### Step 3: Format Output
+```
+1. Parse JSON response from GitHub
+2. Extract fields: nameWithOwner, stargazersCount, description, language, pushedAt
+3. Format as markdown table with:
+   - Rank (1-15)
+   - Repo name (owner/repo)
+   - Stars (human-readable: 1,200)
+   - Description (truncated to 60 chars)
+   - Primary language
+   - Last commit date
+
+4. Add statistics section:
+   - Total repos found
    - Total stars across all repos
+   - Average stars per repo
+   - Language distribution (top 5)
+   - Timestamp (UTC)
+   - Cache status (fresh or age)
+```
+
+### Step 4: Cache Result
+```
+If --no-cache not set:
+  → Save JSON response to ~/.oss-contributor/cache/trending/
+  → File name: trending-{days}-{min_stars}-{topic}-{language}.json
+  → Next query for same filters uses cached version (2-hour TTL)
    - Language distribution
    - Average stars per repo
    - Most popular language
