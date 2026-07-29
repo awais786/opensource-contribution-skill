@@ -1,12 +1,12 @@
 ## 1. Foundation
 
-- [ ] 1.1 Create `skills/oss-contributor/` with `references/`, `references/resources/`, `references/schemas/`, and `scripts/`
-- [ ] 1.2 Write `SKILL.md` with trigger conditions phrased per area, the eight routes, and the shared operating rules — routes only, no methodology
-- [ ] 1.3 Enforce a size ceiling on `SKILL.md` and record the measured size; exceeding it is a signal to split the skill
-- [ ] 1.4 Write `scripts/preflight.py` verifying `gh` is installed and authenticated, exiting with setup instructions on failure
-- [ ] 1.5 Add a rate-limit budget check reporting remaining GraphQL points and aborting with the reset time when below the estimated cost of the requested area
-- [ ] 1.6 Write `scripts/store.py` managing `~/.oss-contributor/` — profile, cache with 7-day TTL and schema version, contribution record
-- [ ] 1.7 Verify cache entries with a mismatched schema version are invalidated rather than misread
+- [x] 1.1 Create `skills/oss-contributor/` with `references/`, `references/resources/`, `references/schemas/`, and `scripts/`
+- [x] 1.2 Write `SKILL.md` with trigger conditions phrased per area, the eight routes, and the shared operating rules — routes only, no methodology
+- [x] 1.3 Enforce a size ceiling on `SKILL.md` and record the measured size; exceeding it is a signal to split the skill
+- [x] 1.4 Write `scripts/preflight.py` verifying `gh` is installed and authenticated, exiting with setup instructions on failure
+- [x] 1.5 Add a rate-limit budget check reporting remaining GraphQL points and aborting with the reset time when below the estimated cost of the requested area
+- [x] 1.6 Write `scripts/store.py` managing `~/.oss-contributor/` — profile, cache with 7-day TTL and schema version, contribution record
+- [x] 1.7 Verify cache entries with a mismatched schema version are invalidated rather than misread
 
 ## 2. Shared collection layer
 

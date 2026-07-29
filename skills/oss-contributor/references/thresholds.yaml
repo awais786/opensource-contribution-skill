@@ -1,0 +1,57 @@
+# Repository health thresholds (design D7).
+#
+# ⚠ UNVALIDATED. These values are estimates, not findings. They were chosen
+# before any measurement against real outcomes and have not been corrected
+# against whether repositories scoring GREEN actually merge outside work.
+#
+# Task 12.5 replaces them with measured values and removes this header.
+# Until then, treat every verdict as directional and report confidence
+# alongside it.
+#
+# Deliberately pessimistic: a false GREEN costs a contributor a wasted
+# weekend; a false RED costs a skipped project among alternatives.
+
+unvalidated: true
+last_reviewed: null
+
+observation_window_days: 90
+
+# Below this many outside pull requests, emit an insufficient-data result
+# rather than any verdict at all.
+minimum_outside_prs: 5
+
+signals:
+  outside_merge_rate:
+    description: share of outside-authored pull requests that were merged
+    green: {min: 0.40}
+    yellow: {min: 0.15}
+    red: {below: 0.15}
+
+  median_first_response_days:
+    description: median days to first maintainer response on an outside PR
+    green: {max: 7}
+    yellow: {max: 30}
+    red: {above: 30}
+
+  days_since_activity:
+    description: days since latest release, or last default-branch commit
+    green: {max: 90}
+    yellow: {max: 365}
+    red: {above: 365}
+
+  bus_factor:
+    description: distinct accounts authoring or merging >=5% of merges
+    green: {min: 3}
+    yellow: {min: 2}
+    red: {below: 2}
+
+# Any RED signal caps the overall verdict at RED. Otherwise the verdict is
+# the worst individual signal.
+combination: worst_signal_with_red_cap
+
+confidence:
+  # Sample sizes below which a verdict is reported as low confidence.
+  low_below_outside_prs: 10
+  # Sample spanning more than this many days is weak evidence of current
+  # practice regardless of size.
+  stale_window_days: 365
