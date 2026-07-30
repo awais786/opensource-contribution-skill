@@ -11,7 +11,7 @@ Discover active open source repositories where you can start contributing.
 
 ## Result
 
-!`bash skills/oss-contributor/scripts/find-repos.sh $ARGUMENTS`
+! bash skills/oss-contributor/scripts/find-repos.sh $ARGUMENTS
 
 Present the output above to the user as-is, preserving the markdown tables and
 links. Do not re-fetch anything from GitHub yourself — the script is the source

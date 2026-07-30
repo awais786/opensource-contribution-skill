@@ -11,7 +11,7 @@ Get comprehensive information about any GitHub repository to evaluate it and fin
 
 ## Result
 
-!`bash skills/oss-contributor/scripts/repo-details.sh "$ARGUMENTS"`
+! bash skills/oss-contributor/scripts/repo-details.sh "$ARGUMENTS"
 
 Present the output above to the user as-is, preserving the markdown and links.
 Do not re-fetch anything from GitHub yourself — the script is the source of
