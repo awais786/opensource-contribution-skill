@@ -35,7 +35,7 @@ other characters is rejected.
 1. **Project Name & GitHub Link** — Direct link to the repository
 2. **Project Stats** — Stars, forks, language, open issue count
 3. **Description** — What the project does and its focus
-4. **Up to 10 Issues to Work On** — Open, unassigned, not pull requests, with labels
+4. **Up to 10 Unassigned Issues** — Genuinely available work (no PRs, no assigned issues), with labels
 5. **Getting Started Guide** — Clone, setup, and contribution workflow
 6. **Timestamp** — When data was fetched
 

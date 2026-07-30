@@ -45,11 +45,11 @@ by stars, topic, or time window.
 ## What You Get
 
 - **10 Trending Repos** — Clickable links, in GitHub's trending order
-- **Up to 10 Issues per Repo** — Open, unassigned, and not pull requests
+- **Up to 10 Unassigned Issues per Repo** — No PRs, no assigned issues
 - **Cached Results** — Fast, repeatable queries with a 2-hour TTL per language
 
-Issues are filtered so what you see is genuinely available work: pull requests
-are excluded, and so is anything already assigned to someone.
+**All issues shown are unassigned and available for you to claim** — pull requests
+are excluded, and so is anything already assigned to a maintainer or contributor.
 
 ## Common Workflows
 
