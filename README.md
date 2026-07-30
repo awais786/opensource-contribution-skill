@@ -9,13 +9,15 @@ Two complementary skills:
 ## Status: ✅ Production Ready
 
 All skills fully tested and operational:
+- ✅ `/find-repos` command working — discover trending repos by language
+- ✅ `/repo-details owner/repo` command working — explore specific repos
 - ✅ GitHub trending page scraping (fast, reliable)
 - ✅ Repository details with GitHub API
-- ✅ Smart 2-hour caching
-- ✅ Per-language trending, with unassigned-issue filtering
+- ✅ Smart 2-hour caching per language
+- ✅ Unassigned-only issue filtering (50-item fetch → 10 shown)
 - ✅ Cross-platform support (macOS/Linux)
-- ✅ Comprehensive documentation
-- ✅ Professional skill documentation (SDO-compliant)
+- ✅ Security: quoted heredocs, argument validation
+- ✅ Comprehensive documentation and examples
 
 ## Quick Start
 
