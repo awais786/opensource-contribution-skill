@@ -130,11 +130,12 @@ def fetch_issues(repo, github_token):
     repo_path = f"{owner}/{name}"
 
     try:
-        # assignee=none filters server-side; the endpoint still returns PRs, so
-        # over-fetch and drop them below rather than truncating to ISSUE_LIMIT first.
+        # Fetch issues; the endpoint returns both issues and PRs interleaved, so
+        # over-fetch and filter client-side rather than truncating first.
+        # Note: assignee=none param doesn't reliably filter, so we filter both PRs and assigned issues client-side.
         api_url = (
             f"https://api.github.com/repos/{repo_path}/issues"
-            f"?per_page={FETCH_PER_PAGE}&state=open&sort=updated&direction=desc&assignee=none"
+            f"?per_page={FETCH_PER_PAGE}&state=open&sort=updated&direction=desc"
         )
         req = urllib.request.Request(api_url)
         if github_token:
@@ -142,7 +143,8 @@ def fetch_issues(repo, github_token):
         req.add_header('Accept', 'application/vnd.github.v3+json')
         response = urllib.request.urlopen(req, timeout=10)
         items = json.loads(response.read().decode('utf-8'))
-        real_issues = [item for item in items if not item.get('pull_request')]
+        # Filter: exclude PRs AND exclude assigned issues (only show unassigned)
+        real_issues = [item for item in items if not item.get('pull_request') and not item.get('assignee')]
         return (repo_path, real_issues, None)
     except Exception as e:
         return (repo_path, None, str(e))
