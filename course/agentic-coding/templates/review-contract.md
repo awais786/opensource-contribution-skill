@@ -47,7 +47,16 @@ A finding may block **only** if it cites one of:
 1. A specific acceptance criterion in the specification, quoted.
 2. A test that fails, named.
 3. A documented convention in the project instructions file, quoted.
-4. A security or data-loss defect with a concrete exploitation or failure path described.
+
+**The one exception — the safety valve.** A security or data-loss defect blocks even when the spec
+is silent, provided the reviewer describes a concrete exploitation or failure path. A contract that
+shipped an authentication bypass because the spec forgot to forbid it would be worse than an endless
+one.
+
+This is an exception, not a fourth kind of traceability, and it is the one clause a reviewer will be
+tempted to stretch. "This feels insecure" does not invoke it. A named attack or a described path to
+data loss does. If the exception is being used more than rarely, the spec is the thing that needs
+fixing.
 
 Everything else is a **nit**: recorded once, never blocking, never re-raised.
 
@@ -72,6 +81,11 @@ VERDICT: BLOCKED (n blockers)
 `PASS` may be accompanied by any number of nits. "Approved with suggestions" is `PASS`.
 There is no third verdict. "Mostly fine, but..." is not a verdict.
 
+**A PASS additionally requires that the project's test command passes.** This is a precondition, not
+a finding: a change whose tests fail cannot receive a PASS regardless of how few issues the reviewer
+found. Run the command in **Project settings** before emitting any verdict. If it cannot be run, say
+so and emit `BLOCKED` — an unverified change has not been reviewed.
+
 ## Rule 4 — Findings freeze after round one
 
 This is the rule that makes the process terminate. The others leak without it.
@@ -90,24 +104,36 @@ in the round-1 fixes themselves.
 Every finding is recorded in the ledger with a status, so a fresh context cannot re-litigate what
 was already settled. Append to the ledger file; never rewrite history.
 
+Findings are recorded with the status they have **at the moment of discovery** — blockers open,
+nits closed immediately. Round 2 updates the open ones. Do not back-fill round 1 with outcomes it
+did not yet have.
+
 ```markdown
 ## Review: <branch or diff range> — <date>
 
 ### Round 1
 | # | Severity | Finding | Cites | Status |
 |---|---|---|---|---|
-| 1 | BLOCKER | Reset token has no expiry | spec §3 "tokens expire in 30 min" | fixed |
-| 2 | BLOCKER | No test for unknown-email path | spec §5 acceptance criteria | fixed |
+| 1 | BLOCKER | Reset token has no expiry | spec §3 "tokens expire in 30 min" | open |
+| 2 | BLOCKER | No test for unknown-email path | spec §5 acceptance criteria | open |
 | 3 | NIT | `_build_url` could take a named arg | — | accepted as-is |
 
+VERDICT: BLOCKED (2 blockers)
+
 ### Round 2
-Blockers 1, 2 verified fixed. No regressions.
+| # | Status |
+|---|---|
+| 1 | fixed |
+| 2 | fixed |
+
+Tests pass. No regressions introduced by the fixes.
 
 VERDICT: PASS
 ```
 
-Statuses are exactly: `fixed`, `accepted as-is`, `deferred to backlog`. An accepted or deferred
-finding is closed. It is not raised again in a later review of the same change.
+Statuses are exactly: `open`, `fixed`, `accepted as-is`, `deferred to backlog`. Only `open` survives
+a round. An accepted or deferred finding is closed, and is not raised again in a later review of the
+same change.
 
 ## Rule 6 — Two fix rounds maximum
 
@@ -132,6 +158,35 @@ recorded as a spec gap in the backlog, so the next specification is better than 
 
 ---
 
+## When there is no written spec
+
+Rule 2 assumes something to trace findings to. Without it, nearly everything classifies as a nit and
+the contract degenerates into rubber-stamping — the opposite failure to the one it was built for, and
+a quieter one.
+
+So when no written spec covers the change, the review does not begin with the code. It begins by
+**stating the criteria it is about to review against**, derived from whatever exists: the ticket, the
+pull request description, the commit messages, the issue being fixed. Three to seven concrete,
+checkable statements.
+
+```markdown
+### Criteria for this review (derived — no written spec)
+1. Password reset emails a single-use link to a registered address.
+2. The link expires after 30 minutes.
+3. An unknown email address produces the same response as a known one.
+4. Reset invalidates existing sessions.
+
+Confirmed by: <author> — <date>
+```
+
+The author confirms or corrects that list **before** the review proper. Once confirmed it is the spec
+for this review, it goes in the ledger, and Rules 2 through 7 apply to it normally.
+
+An unconfirmed list is not a substitute. If the author will not confirm the criteria, that
+disagreement is the actual finding, and no amount of code review resolves it.
+
+---
+
 ## What the reviewer must not do
 
 | Anti-pattern | Why it breaks termination |
@@ -143,14 +198,19 @@ recorded as a spec gap in the backlog, so the next specification is better than 
 | Ending with suggestions instead of a verdict | An unresolved review is an open loop by construction |
 | Softening a real blocker to avoid seeming harsh | Ships the defect and wastes the review |
 | Padding a clean review with invented findings | The single most common cause of the endless loop |
+| Passing a change whose tests fail | A PASS asserts the change works; unverified is not reviewed |
+| Reaching for the security exception on a hunch | Turns the one escape hatch into a general override |
+| Reviewing with no spec and no derived criteria | Everything becomes a nit; the review rubber-stamps |
 
 ---
 
 ## The procedure, condensed
 
 ```
-1. Establish scope        → the diff, and the spec it claims to satisfy
+0. Establish criteria     → the spec, or a derived list the author confirms
+1. Establish scope        → the diff that claims to satisfy them
 2. Round 1                → find everything; classify BLOCKER or NIT by Rule 2
+   Run the tests          → failing tests block a PASS on their own
 3. Write the ledger       → every finding, with its citation
 4. Emit a verdict         → PASS, or BLOCKED (n)
 5. If BLOCKED             → author fixes blockers only
@@ -169,7 +229,7 @@ taste — which is the failure this contract exists to prevent.
 ```yaml
 spec_location:        docs/specs/            # where acceptance criteria live
 instructions_file:    AGENTS.md              # documented conventions
-test_command:         python manage.py test  # must pass for any PASS verdict
+test_command:         python manage.py test  # precondition for PASS — see Rule 3
 ledger_file:          docs/review-ledger.md  # appended, never rewritten
 backlog_file:         docs/review-backlog.md # out-of-scope and deferred findings
 diff_range:           origin/main...HEAD     # default reviewable unit
