@@ -22,7 +22,13 @@ Experienced developers with zero or shallow agentic-tool use. They can code. The
 what a project instructions file does, why their session forgets things, or that model choice
 is a decision they own.
 
-Explicitly out of scope: non-engineers, and existing power users.
+**Prerequisite: working Django familiarity.** The learner must be able to read a Django view,
+run migrations and write a test without looking things up. This is not gatekeeping — a learner
+who is meeting Django for the first time spends Modules 2 and 4 learning the ORM and the auth
+framework instead of learning context discipline, and the vehicle becomes the subject. The
+README states this prerequisite plainly and points elsewhere for Django fundamentals.
+
+Explicitly out of scope: non-engineers, existing power users, and engineers new to Django.
 
 ## Vendor neutrality
 
@@ -224,6 +230,36 @@ the implementation matches it.
 One feature of real substance — login rate limiting, or TOTP two-factor — with all four disciplines
 applied: specified first, model chosen deliberately, context managed, verified before being called
 done. Graded against a rubric drawn from the five preceding modules' criteria.
+
+## Duration and delivery
+
+Roughly **14–16 hours hands-on**, self-paced over two to three weeks.
+
+| Module | Hands-on | What drives the estimate |
+|---|---:|---|
+| 0 — First session | ~1h | Install, authentication, Django environment, seed green, one small change |
+| 1 — Working agreement | ~1.5h | Writing a genuinely specific instructions file takes iteration |
+| 2 — Context management | ~3.5h | Sign-up and log-in implemented twice — naive, then disciplined |
+| 3 — Models and budgets | ~2h | Two tasks across two models, plus the written comparison |
+| 4 — Spec-driven development | ~3h | Password reset through the full chain, spec included |
+| 5 — Capstone | ~3.5h | TOTP or rate limiting under full discipline, graded |
+
+**Module 2's double implementation is the lesson, not padding.** Context exhaustion has to be
+felt once to be believed. It is also the module most likely to need two sittings, and the
+README should say so rather than letting learners think they have fallen behind.
+
+**These are not coding hours.** The agent does the typing. The time goes into reviewing diffs,
+iterating on instructions, and writing the comparisons and specs. The README states this
+explicitly, because learners who expect to be typing conclude they are doing it wrong.
+
+### Delivery shapes
+
+- **Self-paced, one module per sitting, two to three weeks.** Recommended. The gap between
+  sittings is where the practices meet the learner's real work, which is where they stick.
+- **Cohort: six two-hour sessions over three weeks.** Works with a facilitator; Module 2 needs
+  the full slot and then some.
+- **Intensive: two consecutive days.** Not recommended. Modules 2 and 5 are the ones fatigue
+  damages most, and both land late.
 
 ## Django-specific material, distributed
 
