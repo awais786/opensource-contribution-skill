@@ -8,34 +8,53 @@
 
 ## Purpose
 
-Take an experienced engineer who has never meaningfully used an agentic coding tool and make
-them a competent daily driver of whichever one they use. Competent means four specific things,
-which are the course's four topics: they maintain a working agreement with the agent, they
-manage context deliberately, they choose models on purpose, and they specify before they build.
+Take an engineer who has never meaningfully used an agentic coding tool and make them a competent
+daily driver of whichever one they use. Competent means six specific things, which are the course's
+six disciplines: they can judge output they did not write, they maintain a working agreement with
+the agent, they manage context deliberately, they choose models on purpose, they specify before
+they build, and they run reviews that terminate.
 
 The course is not a feature tour. Every module is organised around a failure that a new user
 reliably hits in their first two weeks, and the exercise is the proof they no longer hit it.
 
 ## Audience
 
-Experienced developers with zero or shallow agentic-tool use. They can code. They do not know
-what a project instructions file does, why their session forgets things, or that model choice
-is a decision they own.
+Developers with zero or shallow agentic-tool use. They can code. They do not know what a project
+instructions file does, why their session forgets things, or that model choice is a decision they own.
 
-**Prerequisite: working Django familiarity.** The learner must be able to read a Django view,
-run migrations and write a test without looking things up. This is not gatekeeping — a learner
-who is meeting Django for the first time spends Modules 2 and 4 learning the ORM and the auth
-framework instead of learning context discipline, and the vehicle becomes the subject. The
-README states this prerequisite plainly and points elsewhere for Django fundamentals.
+### Two tracks, one course
 
-Explicitly out of scope: non-engineers, existing power users, and engineers new to Django.
+The course has a single body of content. Seniority changes how it is delivered, not what it says —
+a content fork would double the maintenance for no teaching benefit.
+
+**Standard track.** Self-paced and solo. Assumes working Django familiarity: the learner can read a
+Django view, run migrations and write a test without looking things up.
+
+**Supervised track.** For juniors and recent graduates. Same modules, same exercises, but Modules 3,
+5, 6 and 7 are paired with an experienced reviewer, and the Django prerequisite is satisfied by the
+pair rather than the individual. Roughly 1.4× the duration.
+
+### The real prerequisite is judgement, not Django
+
+Django familiarity is a proxy. The property the course actually depends on is the ability to
+**evaluate code you did not write** — every module after the first compounds on it, and a learner
+who cannot tell a correct diff from a plausible wrong one accumulates defects while believing they
+are learning.
+
+This is the specific reason agentic tools are riskier for juniors than for seniors: generating code
+stopped being the bottleneck, judging it became the bottleneck, and accepting a plausible wrong diff
+is now the easiest mistake available. Earlier drafts of this design left that assumption implicit and
+excluded juniors to compensate. Module 1 now teaches it directly, which is both a better course for
+everyone and the thing that makes the supervised track viable.
+
+Explicitly out of scope: non-engineers and existing power users.
 
 ## Vendor neutrality
 
-The four disciplines are properties of working with a coding agent, not of any product. Two of
-them — spec-driven development and model selection — are already tool-independent. Two —
-the working agreement and context management — are universal in principle and divergent in
-mechanics. Only setup is irreducibly per-tool.
+The six disciplines are properties of working with a coding agent, not of any product. Four of them
+— judging output, model selection, spec-driven development and terminating review — are already
+tool-independent. Two — the working agreement and context management — are universal in principle
+and divergent in mechanics. Only setup is irreducibly per-tool.
 
 ### Supported tools
 
@@ -63,7 +82,7 @@ tool-neutral.
 
 ### The AGENTS.md situation
 
-Verified 2026-08-18, and the single most useful fact Module 1 teaches:
+Verified 2026-08-18, and the single most useful fact Module 2 teaches:
 
 - `AGENTS.md` is an open standard under the Linux Foundation's Agentic AI Foundation, adopted by
   60,000+ repositories and read natively by Cursor, GitHub Copilot, Codex, Windsurf, Aider,
@@ -71,7 +90,7 @@ Verified 2026-08-18, and the single most useful fact Module 1 teaches:
 - **Claude Code is the holdout.** Its memory model still reads `CLAUDE.md`; no native
   `AGENTS.md` path had shipped as of August 2026.
 
-Module 1 therefore teaches `AGENTS.md` as the default and treats Claude Code as a named
+Module 2 therefore teaches `AGENTS.md` as the default and treats Claude Code as a named
 exception, with the practical bridge (a `CLAUDE.md` that points at `AGENTS.md`) shown explicitly.
 This status **must be re-verified at every course revision** — it is the fact most likely to
 change.
@@ -93,7 +112,7 @@ The runner is split so it is not Claude-only:
 
 ## Scope
 
-Seven modules: setup, the four named topics, a review module, and a capstone. Skills/extension authoring,
+Eight modules: setup, judgement, the four named topics, a review module, and a capstone. Skills/extension authoring,
 subagents, hooks, MCP and permissions tuning are **out of scope**.
 
 Django is the *vehicle*, not a subject. The course does not teach Django to people who already
@@ -122,7 +141,7 @@ The seed is scaffolding, not the lesson. It deliberately does **not** contain si
 log-out, password reset or two-factor — those are the exercise material.
 
 The seed carries two or three realistic warts (a view doing too much, a code path with no test
-coverage), documented in its README as intentional. Modules 2 and 4 need something real to work
+coverage), documented in its README as intentional. Modules 1, 3 and 5 need something real to work
 on; a spotless skeleton gives them nothing.
 
 ### Why a seed rather than the learner's own repository
@@ -145,15 +164,17 @@ course/agentic-coding/
   README.md                    syllabus, tool support matrix, how to start
   modules/
     00-first-session/          per-tool setup: claude-code.md, cursor.md, copilot.md, shared.md
-    01-working-agreement.md
-    02-context-management.md
-    03-models-and-budgets.md
-    04-spec-driven-development.md
-    05-review-that-terminates.md
-    06-capstone.md
+    01-judging-output.md
+    02-working-agreement.md
+    03-context-management.md
+    04-models-and-budgets.md
+    05-spec-driven-development.md
+    06-review-that-terminates.md
+    07-capstone.md
   templates/
     review-contract.md         the terminating review contract, adaptable per project
   seed/                        the Django sign-in skeleton
+  judgement-set/               agent-produced diffs + answer key for Module 1
   reference/                   completed solution per module
   runner-prompt.md             tool-neutral runner logic
   progress-template.md         copied into the learner's working copy at kickoff
@@ -189,7 +210,23 @@ authentication, opening the project, running a first task.
 untested code path or add a health-check view. Review the diff, commit it.
 *Verification:* tests pass; a commit exists; the learner can state what the agent changed and why they accepted it.
 
-### Module 1 — Working agreement
+### Module 1 — Judging output you didn't write
+Reading a diff for what it does rather than what the summary claims. Running the tests before
+believing the claim. Reproducing the bug before accepting the fix. Recognising plausible-but-wrong —
+code that reads correctly and fails on an edge the agent never considered. Knowing when to stop the
+agent rather than let it continue from a bad premise.
+
+This is the discipline every later module compounds on, and the one earlier drafts of this design
+assumed rather than taught.
+
+*Exercise:* the course ships a **judgement set** — a handful of agent-produced diffs against the seed,
+some correct, some subtly defective. Classify each as accept or reject, with evidence: a test run, a
+traced failure path, or a cited criterion.
+*Verification:* classifications match the answer key, **and** every rejection cites reproducible
+evidence rather than suspicion. A correct verdict reached by hunch is scored as a miss — the evidence
+is the skill being taught, not the verdict.
+
+### Module 2 — Working agreement
 Project instructions files: what belongs in them, what does not, why "be helpful" is worthless and
 "run `python manage.py test` before claiming done" is not. `AGENTS.md` as the standard, per-tool
 files as the exceptions, and how to avoid maintaining five near-identical files. Scope discipline.
@@ -200,7 +237,7 @@ Wire it up for the learner's tool. Demonstrate a behaviour change with and witho
 *Verification:* the file contains project-specific, checkable instructions — not generic advice that
 would apply to any repository; the tool actually reads it; the learner can name the observed difference.
 
-### Module 2 — Context management
+### Module 3 — Context management
 What occupies context, what compaction or truncation costs, clearing as a routine rather than a
 panic button, scoping reads to the parts of files that matter, and delegating side quests to keep
 the main thread clean. Recognising the symptoms of a session that has lost the thread.
@@ -210,7 +247,7 @@ window in any tool. Do it once naively, observe what happens, then re-run with c
 *Verification:* sign-up and log-in work and are tested; the learner can name what filled context the
 first time and which specific technique they applied the second.
 
-### Module 3 — Models and token budgets
+### Module 4 — Models and token budgets
 The most naturally vendor-agnostic module: every Tier 1 tool exposes a model picker spanning
 multiple vendors. The current roster and what each model is for. Context window vs output cap vs
 thinking budget — three different limits routinely confused for one. Where each tool exposes model
@@ -220,7 +257,7 @@ tests for the existing views) and a design one (choose an approach for password 
 two models. Record quality, latency and cost.
 *Verification:* a written comparison that defends a default for each kind of task, rather than stating a preference.
 
-### Module 4 — Spec-driven development
+### Module 5 — Spec-driven development
 Fully tool-independent. Brainstorm → spec → plan → implement → verify. Why the expensive mistakes
 are the ones made before any code is written. How to tell a spec that constrains implementation from
 one that merely describes a wish.
@@ -229,7 +266,7 @@ semantics, the behaviour on an unknown email address, and what is covered by tes
 *Verification:* a spec file exists, contains no placeholders, its acceptance criteria are testable, and
 the implementation matches it.
 
-### Module 5 — Review that terminates
+### Module 6 — Review that terminates
 Why agent-driven review does not converge, and the rules that make it converge. Reviewing the diff
 rather than the codebase. Severity tiers where only spec-traceable findings block. Freezing the
 finding list after the first round. The ledger that stops settled items being re-raised. Bounded
@@ -238,7 +275,7 @@ rounds, and treating a third round as evidence the spec is wrong rather than the
 Every Tier 1 tool can run this, because the contract is a document rather than a feature.
 
 *Exercise:* write a `review-contract.md` for the sign-in project by adapting the course template,
-then run a full review of the Module 4 password-reset work against it. Record the ledger. Fix the
+then run a full review of the Module 5 password-reset work against it. Record the ledger. Fix the
 blockers. Re-review.
 *Verification:* **idempotence** — running the review twice against the same unchanged diff yields
 the same verdict both times. Additionally: the review terminated in at most two fix rounds; every
@@ -246,8 +283,8 @@ blocking finding cites a spec criterion, a failing test or a documented conventi
 recorded without blocking; the final output is an explicit PASS or BLOCKED verdict rather than a
 list of suggestions.
 
-### Module 6 — Capstone
-One feature of real substance — login rate limiting, or TOTP two-factor — with all five disciplines
+### Module 7 — Capstone
+One feature of real substance — login rate limiting, or TOTP two-factor — with all six disciplines
 applied: specified first, model chosen deliberately, context managed, implemented, then reviewed to
 a terminating PASS against the learner's own review contract. Graded against a rubric drawn from the
 preceding modules' criteria.
@@ -270,24 +307,39 @@ never when to stop looking. That is the gap this contract fills.
 2. **Only spec-traceable findings block.** A finding may block only if it cites a specific
    acceptance criterion from the spec, a failing test, or a documented convention in the project
    instructions file. Everything else is a nit: recorded, never blocking, never re-raised.
+   **One labelled exception:** a security or data-loss defect blocks even when the spec is silent,
+   provided a concrete exploitation or failure path is described. It is marked in the contract as an
+   exception rather than a fourth kind of traceability, because it is the clause a reviewer will
+   otherwise stretch into a general override.
 3. **PASS is a legitimate and expected outcome.** The contract states this explicitly, because a
    reviewer that treats zero findings as failure will manufacture findings. The review's final
    line is a verdict — `PASS` or `BLOCKED (n blockers)` — not a list of suggestions.
+   **Passing tests are a precondition for PASS**, not a finding: a change whose tests fail cannot
+   pass regardless of how few issues were found, and a test suite that cannot be run yields `BLOCKED`.
 4. **Findings freeze after round one.** Round one produces the complete list. Subsequent rounds
    verify only that those blockers were addressed, plus regressions introduced by the fixes
    themselves. No new hunting. This is the load-bearing rule; without it the others leak, because
    a second pass that goes looking will always find something.
-5. **A ledger carries state across rounds.** Every finding is recorded with a status — fixed,
-   accepted-as-is, or deferred to backlog — so a fresh context cannot re-litigate what was settled.
+5. **A ledger carries state across rounds.** Every finding is recorded with the status it has at
+   the moment of discovery — `open`, `fixed`, `accepted as-is`, or `deferred to backlog` — so a
+   fresh context cannot re-litigate what was settled. Only `open` findings survive a round.
 6. **Two fix rounds maximum.** Still blocked after the second round means the specification is
    wrong or incomplete, not the code. Escalate to re-specification rather than continuing to review.
 7. **Disagreement is resolved against the spec, not by seniority or politeness.** If the reviewer
    and the author disagree and the spec is silent, the finding is a nit by definition, and the
    silence is logged as a spec gap.
 
+**When no written spec exists**, the review does not begin with the code. It begins by deriving three
+to seven concrete, checkable criteria from whatever does exist — ticket, pull request description,
+commit messages — and having the author confirm them. Once confirmed, that list is the spec for this
+review and the rules apply normally. Without this step a traceability-only contract classifies almost
+everything as a nit and degenerates into rubber-stamping, which is the opposite failure and a quieter
+one. An unconfirmed derived list does not count; if the author will not confirm the criteria, that
+disagreement is the finding.
+
 ### Why idempotence is the verification
 
-Module 5's pass criterion is that the same unchanged diff reviewed twice yields the same verdict.
+Module 6's pass criterion is that the same unchanged diff reviewed twice yields the same verdict.
 This is objective, tool-neutral, and tests precisely the property that is missing today. A review
 process that cannot reproduce its own verdict has no verdict — it has opinions.
 
@@ -299,19 +351,21 @@ building, since it pays for itself immediately.
 
 ## Duration and delivery
 
-Roughly **16–18 hours hands-on**, self-paced over three weeks.
+Roughly **18–20 hours hands-on** on the standard track, self-paced over three to four weeks.
+The supervised track runs about 1.4× that, most of the difference landing in Modules 3, 5 and 7.
 
 | Module | Hands-on | What drives the estimate |
 |---|---:|---|
 | 0 — First session | ~1h | Install, authentication, Django environment, seed green, one small change |
-| 1 — Working agreement | ~1.5h | Writing a genuinely specific instructions file takes iteration |
-| 2 — Context management | ~3.5h | Sign-up and log-in implemented twice — naive, then disciplined |
-| 3 — Models and budgets | ~2h | Two tasks across two models, plus the written comparison |
-| 4 — Spec-driven development | ~3h | Password reset through the full chain, spec included |
-| 5 — Review that terminates | ~2h | Writing the contract, then two review rounds plus the idempotence check |
-| 6 — Capstone | ~3.5h | TOTP or rate limiting under full discipline, reviewed to PASS |
+| 1 — Judging output you didn't write | ~1.5h | Working the judgement set, with evidence for each verdict |
+| 2 — Working agreement | ~1.5h | Writing a genuinely specific instructions file takes iteration |
+| 3 — Context management | ~3.5h | Sign-up and log-in implemented twice — naive, then disciplined |
+| 4 — Models and budgets | ~2h | Two tasks across two models, plus the written comparison |
+| 5 — Spec-driven development | ~3h | Password reset through the full chain, spec included |
+| 6 — Review that terminates | ~2h | Writing the contract, then two review rounds plus the idempotence check |
+| 7 — Capstone | ~3.5h | TOTP or rate limiting under full discipline, reviewed to PASS |
 
-**Module 2's double implementation is the lesson, not padding.** Context exhaustion has to be
+**Module 3's double implementation is the lesson, not padding.** Context exhaustion has to be
 felt once to be believed. It is also the module most likely to need two sittings, and the
 README should say so rather than letting learners think they have fallen behind.
 
@@ -323,21 +377,23 @@ explicitly, because learners who expect to be typing conclude they are doing it 
 
 - **Self-paced, one module per sitting, two to three weeks.** Recommended. The gap between
   sittings is where the practices meet the learner's real work, which is where they stick.
-- **Cohort: seven two-hour sessions over three to four weeks.** Works with a facilitator; Module 2 needs
-  the full slot and then some.
-- **Intensive: two consecutive days.** Not recommended. Modules 2 and 5 are the ones fatigue
-  damages most, and both land late.
+- **Cohort: eight two-hour sessions over four weeks.** Works with a facilitator; Module 3 needs the
+  full slot and then some. This is also the natural shape for the supervised track, since the
+  facilitator is the pair.
+- **Intensive: two consecutive days.** Not recommended. Modules 3 and 7 are the ones fatigue damages
+  most, and both land late. Never run the supervised track this way.
 
 ## Django-specific material, distributed
 
 | Pattern | Where it lands |
 |---|---|
-| Test command, migration policy, settings layout | Module 1, as `AGENTS.md` content |
-| Multi-file feature sprawl; ORM and settings as context traps | Module 2, as the core exercise |
-| Mechanical test-writing vs design work as different model jobs | Module 3, as the two tasks |
-| Migration and security criteria as testable acceptance criteria | Module 4, in the spec |
-| Framework mechanisms over hand-rolled auth | Module 5, as blocking review criteria |
-| Django security defaults as spec-traceable checks | Module 6, in the capstone rubric |
+| Test command, migration policy, settings layout | Module 2, as `AGENTS.md` content |
+| Multi-file feature sprawl; ORM and settings as context traps | Module 3, as the core exercise |
+| Mechanical test-writing vs design work as different model jobs | Module 4, as the two tasks |
+| Migration and security criteria as testable acceptance criteria | Module 5, in the spec |
+| Framework mechanisms over hand-rolled auth | Module 6, as blocking review criteria |
+| Django security defaults as spec-traceable checks | Module 7, in the capstone rubric |
+| Reading a Django diff for what it actually does | Module 1, as judgement-set material |
 
 ## The runner
 
@@ -382,15 +438,19 @@ README names the versions the course was written against.
 RED-GREEN-REFACTOR. Scenarios run against the module content with no runner present; the gaps
 observed define what the runner is for and populate each module's Common Mistakes section.
 
-**Content before mechanics.** The seed and modules 0–2 are written and tested before the runner is
-built, so the runner is designed against real content.
+**Content before mechanics.** The seed, the judgement set and modules 0–3 are written and tested
+before the runner is built, so the runner is designed against real content.
 
-**Tier 1 parity is tested, not assumed.** Before release, Module 1 and Module 2 exercises are run
+**The judgement set needs an answer key that survives scrutiny.** Each defective diff must have a
+reproducible failure — a test that fails, or a traced input that breaks it. A diff that is merely
+stylistically worse does not belong in the set, because Module 1 grades evidence, not taste.
+
+**Tier 1 parity is tested, not assumed.** Before release, the Module 2 and Module 3 exercises are run
 end-to-end in each Tier 1 tool. A mechanics table written from documentation alone is a guess.
 
 ## Success criteria
 
-1. A new engineer completes all seven modules **in any Tier 1 tool** and ends with a working Django
+1. A new engineer completes all eight modules **in any Tier 1 tool** and ends with a working Django
    sign-in application containing sign-up, log-in, password reset and the capstone feature — all tested.
 2. Each module's exercise produces an artefact — a commit, an instructions file, a written comparison,
    a spec — and verification grades the artefact, never the tool.
@@ -403,7 +463,11 @@ end-to-end in each Tier 1 tool. A mechanics table written from documentation alo
    course.
 7. Modules read correctly standalone, without any runner.
 8. The seed's test suite passes on a clean checkout, on the pinned Django and Python versions.
-9. No factual claim about tools, models, limits or pricing is sourced from memory.
+9. Every defective diff in the judgement set has a reproducible failure, and a learner who accepts
+   one can be shown exactly what they missed.
+10. A junior on the supervised track completes the same exercises and the same verification as a
+   senior on the standard track, differing only in pairing and pace.
+11. No factual claim about tools, models, limits or pricing is sourced from memory.
 
 ## Open decisions
 
