@@ -93,7 +93,7 @@ The runner is split so it is not Claude-only:
 
 ## Scope
 
-Six modules: setup plus the four named topics plus a capstone. Skills/extension authoring,
+Seven modules: setup, the four named topics, a review module, and a capstone. Skills/extension authoring,
 subagents, hooks, MCP and permissions tuning are **out of scope**.
 
 Django is the *vehicle*, not a subject. The course does not teach Django to people who already
@@ -149,7 +149,10 @@ course/agentic-coding/
     02-context-management.md
     03-models-and-budgets.md
     04-spec-driven-development.md
-    05-capstone.md
+    05-review-that-terminates.md
+    06-capstone.md
+  templates/
+    review-contract.md         the terminating review contract, adaptable per project
   seed/                        the Django sign-in skeleton
   reference/                   completed solution per module
   runner-prompt.md             tool-neutral runner logic
@@ -226,14 +229,77 @@ semantics, the behaviour on an unknown email address, and what is covered by tes
 *Verification:* a spec file exists, contains no placeholders, its acceptance criteria are testable, and
 the implementation matches it.
 
-### Module 5 — Capstone
-One feature of real substance — login rate limiting, or TOTP two-factor — with all four disciplines
-applied: specified first, model chosen deliberately, context managed, verified before being called
-done. Graded against a rubric drawn from the five preceding modules' criteria.
+### Module 5 — Review that terminates
+Why agent-driven review does not converge, and the rules that make it converge. Reviewing the diff
+rather than the codebase. Severity tiers where only spec-traceable findings block. Freezing the
+finding list after the first round. The ledger that stops settled items being re-raised. Bounded
+rounds, and treating a third round as evidence the spec is wrong rather than the code.
+
+Every Tier 1 tool can run this, because the contract is a document rather than a feature.
+
+*Exercise:* write a `review-contract.md` for the sign-in project by adapting the course template,
+then run a full review of the Module 4 password-reset work against it. Record the ledger. Fix the
+blockers. Re-review.
+*Verification:* **idempotence** — running the review twice against the same unchanged diff yields
+the same verdict both times. Additionally: the review terminated in at most two fix rounds; every
+blocking finding cites a spec criterion, a failing test or a documented convention; nits were
+recorded without blocking; the final output is an explicit PASS or BLOCKED verdict rather than a
+list of suggestions.
+
+### Module 6 — Capstone
+One feature of real substance — login rate limiting, or TOTP two-factor — with all five disciplines
+applied: specified first, model chosen deliberately, context managed, implemented, then reviewed to
+a terminating PASS against the learner's own review contract. Graded against a rubric drawn from the
+preceding modules' criteria.
+
+## The review contract
+
+The course's most reusable artefact, shipped as `templates/review-contract.md` and adapted per
+project. It exists because agent-driven review does not terminate by default: "is this good?" has
+no answer, so each iteration produces fresh findings indefinitely.
+
+Existing review guidance — including the `requesting-code-review` and `receiving-code-review`
+skills already in this environment — defines severity tiers and how to push back on a wrong
+reviewer, but **none defines a termination condition**. They tell a reviewer how to find issues,
+never when to stop looking. That is the gap this contract fills.
+
+### The seven rules
+
+1. **Review the diff, not the codebase.** The reviewable unit is the change under review.
+   Pre-existing problems outside it are recorded in a backlog file and never block.
+2. **Only spec-traceable findings block.** A finding may block only if it cites a specific
+   acceptance criterion from the spec, a failing test, or a documented convention in the project
+   instructions file. Everything else is a nit: recorded, never blocking, never re-raised.
+3. **PASS is a legitimate and expected outcome.** The contract states this explicitly, because a
+   reviewer that treats zero findings as failure will manufacture findings. The review's final
+   line is a verdict — `PASS` or `BLOCKED (n blockers)` — not a list of suggestions.
+4. **Findings freeze after round one.** Round one produces the complete list. Subsequent rounds
+   verify only that those blockers were addressed, plus regressions introduced by the fixes
+   themselves. No new hunting. This is the load-bearing rule; without it the others leak, because
+   a second pass that goes looking will always find something.
+5. **A ledger carries state across rounds.** Every finding is recorded with a status — fixed,
+   accepted-as-is, or deferred to backlog — so a fresh context cannot re-litigate what was settled.
+6. **Two fix rounds maximum.** Still blocked after the second round means the specification is
+   wrong or incomplete, not the code. Escalate to re-specification rather than continuing to review.
+7. **Disagreement is resolved against the spec, not by seniority or politeness.** If the reviewer
+   and the author disagree and the spec is silent, the finding is a nit by definition, and the
+   silence is logged as a spec gap.
+
+### Why idempotence is the verification
+
+Module 5's pass criterion is that the same unchanged diff reviewed twice yields the same verdict.
+This is objective, tool-neutral, and tests precisely the property that is missing today. A review
+process that cannot reproduce its own verdict has no verdict — it has opinions.
+
+### Standalone value
+
+The contract is written to be useful dropped into any project, by anyone who never took the course.
+This is an explicit success criterion, and it makes the template the first piece of the course worth
+building, since it pays for itself immediately.
 
 ## Duration and delivery
 
-Roughly **14–16 hours hands-on**, self-paced over two to three weeks.
+Roughly **16–18 hours hands-on**, self-paced over three weeks.
 
 | Module | Hands-on | What drives the estimate |
 |---|---:|---|
@@ -242,7 +308,8 @@ Roughly **14–16 hours hands-on**, self-paced over two to three weeks.
 | 2 — Context management | ~3.5h | Sign-up and log-in implemented twice — naive, then disciplined |
 | 3 — Models and budgets | ~2h | Two tasks across two models, plus the written comparison |
 | 4 — Spec-driven development | ~3h | Password reset through the full chain, spec included |
-| 5 — Capstone | ~3.5h | TOTP or rate limiting under full discipline, graded |
+| 5 — Review that terminates | ~2h | Writing the contract, then two review rounds plus the idempotence check |
+| 6 — Capstone | ~3.5h | TOTP or rate limiting under full discipline, reviewed to PASS |
 
 **Module 2's double implementation is the lesson, not padding.** Context exhaustion has to be
 felt once to be believed. It is also the module most likely to need two sittings, and the
@@ -256,7 +323,7 @@ explicitly, because learners who expect to be typing conclude they are doing it 
 
 - **Self-paced, one module per sitting, two to three weeks.** Recommended. The gap between
   sittings is where the practices meet the learner's real work, which is where they stick.
-- **Cohort: six two-hour sessions over three weeks.** Works with a facilitator; Module 2 needs
+- **Cohort: seven two-hour sessions over three to four weeks.** Works with a facilitator; Module 2 needs
   the full slot and then some.
 - **Intensive: two consecutive days.** Not recommended. Modules 2 and 5 are the ones fatigue
   damages most, and both land late.
@@ -269,7 +336,8 @@ explicitly, because learners who expect to be typing conclude they are doing it 
 | Multi-file feature sprawl; ORM and settings as context traps | Module 2, as the core exercise |
 | Mechanical test-writing vs design work as different model jobs | Module 3, as the two tasks |
 | Migration and security criteria as testable acceptance criteria | Module 4, in the spec |
-| Framework mechanisms over hand-rolled auth | Module 5, in the review rubric |
+| Framework mechanisms over hand-rolled auth | Module 5, as blocking review criteria |
+| Django security defaults as spec-traceable checks | Module 6, in the capstone rubric |
 
 ## The runner
 
@@ -322,16 +390,20 @@ end-to-end in each Tier 1 tool. A mechanics table written from documentation alo
 
 ## Success criteria
 
-1. A new engineer completes all six modules **in any Tier 1 tool** and ends with a working Django
+1. A new engineer completes all seven modules **in any Tier 1 tool** and ends with a working Django
    sign-in application containing sign-up, log-in, password reset and the capstone feature — all tested.
 2. Each module's exercise produces an artefact — a commit, an instructions file, a written comparison,
    a spec — and verification grades the artefact, never the tool.
 3. No module contains a vague cross-tool instruction; every technique names a concrete mechanic per
    Tier 1 tool or declares the tool unsupported for it.
 4. The runner works both as a Claude Code skill and as a prompt handed to another agent.
-5. Modules read correctly standalone, without any runner.
-6. The seed's test suite passes on a clean checkout, on the pinned Django and Python versions.
-7. No factual claim about tools, models, limits or pricing is sourced from memory.
+5. A review run under the course's contract terminates: the same diff reviewed twice yields the
+   same verdict, and no review needs more than two fix rounds.
+6. `templates/review-contract.md` is useful on its own, dropped into a project that never took the
+   course.
+7. Modules read correctly standalone, without any runner.
+8. The seed's test suite passes on a clean checkout, on the pinned Django and Python versions.
+9. No factual claim about tools, models, limits or pricing is sourced from memory.
 
 ## Open decisions
 
